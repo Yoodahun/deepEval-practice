@@ -189,22 +189,22 @@ def test_refund_answer_is_correct():
     assert_test(test_case, [correctness])
 ```
 
-- [ ] DeepEval CLI로 실행한다. 일반 `pytest`도 동작할 수 있지만 학습과 실제 eval suite에서는 DeepEval의 추가 기능이 붙는 전용 명령을 사용한다.
+- [x] DeepEval CLI로 실행한다. 일반 `pytest`도 동작할 수 있지만 학습과 실제 eval suite에서는 DeepEval의 추가 기능이 붙는 전용 명령을 사용한다.
 
 ```bash
 deepeval test run tests/evals/test_first_eval.py -v
 ```
 
-- [ ] `actual_output`을 “환불은 불가능합니다”로 바꾸어 테스트가 실패하는지 확인한다.
-- [ ] 다시 원래 값으로 되돌리고 통과하는지 확인한다.
-- [ ] 점수뿐 아니라 judge가 제공한 실패 이유를 읽고 합리적인지 한 문장으로 기록한다.
+- [x] `actual_output`을 “환불은 불가능합니다”로 바꾸어 테스트가 실패하는지 확인한다.
+- [x] 다시 원래 값으로 되돌리고 통과하는지 확인한다.
+- [x] 점수뿐 아니라 judge가 제공한 실패 이유를 읽고 합리적인지 한 문장으로 기록한다.
 
 ### 준비 단계 완료 조건
 
-- [ ] 가상환경을 새로 만들어 같은 명령으로 재현할 수 있다.
-- [ ] API 키가 Git 추적 대상이 아님을 `git status`로 확인했다.
-- [ ] 같은 테스트를 의도적으로 pass와 fail 양쪽으로 실행했다.
-- [ ] `LLMTestCase`, `GEval`, `threshold`, `assert_test`의 역할을 설명할 수 있다.
+- [x] 가상환경을 새로 만들어 같은 명령으로 재현할 수 있다.
+- [x] API 키가 Git 추적 대상이 아님을 `git status`로 확인했다.
+- [x] 같은 테스트를 의도적으로 pass와 fail 양쪽으로 실행했다.
+- [x] `LLMTestCase`, `GEval`, `threshold`, `assert_test`의 역할을 설명할 수 있다.
 
 ---
 
