@@ -13,15 +13,19 @@ DeepEval은 Appium이나 XCUITest를 대체하는 UI 테스트 도구가 아니�
 
 기존 테스트 경험과 대응시키면 다음과 같다.
 
-| 익숙한 테스트 개념 | DeepEval 개념 | 차이점 |
-|---|---|---|
-| 테스트 입력/fixture | `Golden`, `EvaluationDataset` | 실행 전에는 실제 LLM 출력이 없을 수 있다. |
-| 테스트 실행 결과 | `actual_output` | 동일 입력에도 표현과 점수가 달라질 수 있다. |
-| 예상 결과 | `expected_output`, `context`, `expected_tools` | 완전 일치 문자열뿐 아니라 의미·근거·행동을 정의한다. |
-| assertion | metric + `threshold` + `assert_test()` | 상당수 메트릭이 다른 LLM을 judge로 사용한다. |
-| parameterized test | dataset + `pytest.mark.parametrize` | 대표 사례, 실패 사례, 경계 사례의 품질이 중요하다. |
-| 테스트 리포트 | 로컬 결과 / 선택적 Confident AI | Confident AI 계정 없이도 로컬 실행이 가능하다. |
-| flaky test 관리 | 반복 측정·judge 고정·임계값 보정 | 확률적 시스템과 확률적 judge 양쪽의 변동을 다룬다. |
+
+| 익숙한 테스트 개념         | DeepEval 개념                                    | 차이점                              |
+| ------------------ | ---------------------------------------------- | -------------------------------- |
+| 테스트 입력/fixture     | `Golden`, `EvaluationDataset`                  | 실행 전에는 실제 LLM 출력이 없을 수 있다.       |
+| 테스트 실행 결과          | `actual_output`                                | 동일 입력에도 표현과 점수가 달라질 수 있다.        |
+| 예상 결과              | `expected_output`, `context`, `expected_tools` | 완전 일치 문자열뿐 아니라 의미·근거·행동을 정의한다.   |
+| assertion          | metric + `threshold` + `assert_test()`         | 상당수 메트릭이 다른 LLM을 judge로 사용한다.    |
+| parameterized test | dataset + `pytest.mark.parametrize`            | 대표 사례, 실패 사례, 경계 사례의 품질이 중요하다.   |
+| 테스트 리포트            | 로컬 결과 / 선택적 Confident AI                       | Confident AI 계정 없이도 로컬 실행이 가능하다. |
+| flaky test 관리      | 반복 측정·judge 고정·임계값 보정                          | 확률적 시스템과 확률적 judge 양쪽의 변동을 다룬다.  |
+
+
+
 
 ### 이 과정에서 만들 최종 산출물
 
@@ -34,23 +38,31 @@ DeepEval은 Appium이나 XCUITest를 대체하는 UI 테스트 도구가 아니�
 
 ---
 
+
+
 ## 1. 전체 학습 로드맵
 
-| 주차 | 주제 | 주차 완료 산출물 |
-|---|---|---|
-| 준비 | 설치, API 키, 첫 실행 | 통과/실패하는 첫 eval 2개 |
-| 1주차 | LLM 평가 기본 모델 | 평가 계약서와 단일 턴 테스트 |
-| 2주차 | 표준·custom 메트릭 | 메트릭 선택표와 G-Eval rubric |
-| 3주차 | 데이터셋과 회귀 테스트 | 20개 이상의 golden dataset |
-| 4주차 | RAG·agent·대화 평가 | 관심 시스템 하나의 심화 suite |
-| 5주차 | 신뢰도·비용·디버깅 | 임계값 보정 및 flaky 대응 기록 |
-| 6주차 | CI/CD와 캡스톤 | 재현 가능한 eval pipeline |
+
+| 주차  | 주제              | 주차 완료 산출물              |
+| --- | --------------- | ---------------------- |
+| 준비  | 설치, API 키, 첫 실행 | 통과/실패하는 첫 eval 2개      |
+| 1주차 | LLM 평가 기본 모델    | 평가 계약서와 단일 턴 테스트       |
+| 2주차 | 표준·custom 메트릭   | 메트릭 선택표와 G-Eval rubric |
+| 3주차 | 데이터셋과 회귀 테스트    | 20개 이상의 golden dataset |
+| 4주차 | RAG·agent·대화 평가 | 관심 시스템 하나의 심화 suite    |
+| 5주차 | 신뢰도·비용·디버깅      | 임계값 보정 및 flaky 대응 기록   |
+| 6주차 | CI/CD와 캡스톤      | 재현 가능한 eval pipeline   |
+
 
 권장 원칙은 “문서 읽기 20%, 직접 실패시켜 보기 80%”다. 각 실습에서는 좋은 출력만 만들지 말고, 의도적으로 관련성 부족·근거 부족·형식 오류·잘못된 도구 호출을 넣어 메트릭이 실패를 잘 잡는지 확인한다.
 
 ---
 
+
+
 ## 준비 단계 — 설치부터 첫 테스트까지
+
+
 
 ### 2. 로컬 환경 준비
 
@@ -91,6 +103,8 @@ deepeval --help
 python -m pip freeze > requirements-lock.txt
 ```
 
+
+
 #### 2.2 권장 디렉터리 구조
 
 ```text
@@ -119,6 +133,8 @@ deepEval-practice/
 __pycache__/
 .pytest_cache/
 ```
+
+
 
 ### 3. OpenAI API 키 설정
 
@@ -155,6 +171,8 @@ python -c 'import os; print("OPENAI_API_KEY loaded:", bool(os.getenv("OPENAI_API
 ```
 
 - [x] 공개 저장소에 키가 한 번이라도 올라갔다면 파일에서 지우는 것으로 끝내지 않고 즉시 키를 폐기·재발급한다.
+
+
 
 ### 4. 첫 DeepEval 테스트
 
@@ -199,6 +217,8 @@ deepeval test run tests/evals/test_first_eval.py -v
 - [x] 다시 원래 값으로 되돌리고 통과하는지 확인한다.
 - [x] 점수뿐 아니라 judge가 제공한 실패 이유를 읽고 합리적인지 한 문장으로 기록한다.
 
+
+
 ### 준비 단계 완료 조건
 
 - [x] 가상환경을 새로 만들어 같은 명령으로 재현할 수 있다.
@@ -208,12 +228,16 @@ deepeval test run tests/evals/test_first_eval.py -v
 
 ---
 
+
+
 ## 1주차 — LLM 평가의 테스트 모델 익히기
+
+
 
 ### 세션 1: 평가 대상과 평가 범위
 
-- [ ] DeepEval의 Introduction과 Single-Turn Test Case 문서를 읽는다.
-- [ ] 평가 대상을 하나 고른다. 추천: 고객지원 답변기, 문서 요약기, RAG Q&A, 도구 호출 agent 중 하나.
+- [x] DeepEval의 Introduction과 Single-Turn Test Case 문서를 읽는다.
+- [x] 평가 대상을 하나 고른다. 추천: 고객지원 답변기, 문서 요약기, RAG Q&A, 도구 호출 agent 중 하나.
 - [ ] 가장 먼저 전체 앱을 black-box로 평가할 end-to-end 범위를 정의한다.
 - [ ] 다음 양식으로 “평가 계약서”를 작성한다.
 
@@ -228,33 +252,40 @@ deepeval test run tests/evals/test_first_eval.py -v
 - 사람 reviewer가 합격/불합격을 판단하는 기준:
 ```
 
+
+
 ### 세션 2: `LLMTestCase` 필드
 
-- [ ] 다음 필드의 의미와 “정적 ground truth인지, 런타임 관측값인지”를 구분한다.
+- [x] 다음 필드의 의미와 “정적 ground truth인지, 런타임 관측값인지”를 구분한다.
 
-| 필드 | 의미 | 성격 |
-|---|---|---|
-| `input` | 사용자 또는 상위 컴포넌트의 입력 | 테스트 입력 |
-| `actual_output` | 평가 대상 앱이 실제 생성한 출력 | 런타임 값 |
-| `expected_output` | 이상적인 결과의 예시 | 정적 reference |
-| `context` | 입력에 대한 이상적이고 신뢰 가능한 근거 | 정적 ground truth |
-| `retrieval_context` | RAG retriever가 실제로 가져온 문서 | 런타임 값 |
-| `tools_called` | agent가 실제 호출한 도구 | 런타임 값 |
-| `expected_tools` | 기대하는 도구 호출 | 정적 reference |
 
-- [ ] `context`와 `retrieval_context`를 바꾸어 넣으면 진단 의미가 어떻게 틀어지는지 설명한다.
-- [ ] `expected_output`은 단 하나의 허용 문자열이 아니라 평가 기준을 구체화하는 reference임을 예제로 확인한다.
+| 필드                  | 의미                        | 성격              |
+| ------------------- | ------------------------- | --------------- |
+| `input`             | 사용자 또는 상위 컴포넌트의 입력        | 테스트 입력          |
+| `actual_output`     | 평가 대상 앱이 실제 생성한 출력        | 런타임 값           |
+| `expected_output`   | 이상적인 결과의 예시               | 정적 reference    |
+| `context`           | 입력에 대한 이상적이고 신뢰 가능한 근거    | 정적 ground truth |
+| `retrieval_context` | RAG retriever가 실제로 가져온 문서 | 런타임 값           |
+| `tools_called`      | agent가 실제 호출한 도구          | 런타임 값           |
+| `expected_tools`    | 기대하는 도구 호출                | 정적 reference    |
+
+
+- [x] `context`와 `retrieval_context`를 바꾸어 넣으면 진단 의미가 어떻게 틀어지는지 설명한다.
+- [x] `expected_output`은 단 하나의 허용 문자열이 아니라 평가 기준을 구체화하는 reference임을 예제로 확인한다.
+
+
 
 ### 세션 3: `measure()`, `evaluate()`, `assert_test()`
 
-- [ ] 한 테스트 케이스에 `metric.measure(test_case)`를 사용해 점수와 이유를 출력한다.
-- [ ] 여러 테스트 케이스에 `evaluate(test_cases=..., metrics=...)`를 사용한다.
-- [ ] 동일 케이스를 `assert_test()`와 `deepeval test run`으로 실행해 실패가 CI exit code로 연결되는 것을 확인한다.
-- [ ] 다음 사용 원칙을 자신의 말로 정리한다.
-
+- [x] 한 테스트 케이스에 `metric.measure(test_case)`를 사용해 점수와 이유를 출력한다.
+- [x] 여러 테스트 케이스에 `evaluate(test_cases=..., metrics=...)`를 사용한다.
+- [x] 동일 케이스를 `assert_test()`와 `deepeval test run`으로 실행해 실패가 CI exit code로 연결되는 것을 확인한다.
+- [x] 다음 사용 원칙을 자신의 말로 정리한다.
   - 탐색·분석·일괄 리포트: `evaluate()`
   - 개별 메트릭 디버깅: `measure()`
   - 회귀 방지와 CI gate: `assert_test()` + `deepeval test run`
+
+
 
 ### 세션 4: 결정적 assertion과 의미 기반 eval 분리
 
@@ -262,6 +293,8 @@ deepeval test run tests/evals/test_first_eval.py -v
 - [ ] 관련성, 도움됨, 어조, 근거 충실성처럼 의미 평가가 필요한 요구사항 3개를 작성한다.
 - [ ] 결정적 조건은 우선 일반 pytest assertion으로 검증하고, 주관적·의미적 조건에 LLM judge를 사용한다.
 - [ ] “모든 것을 G-Eval 하나로 평가”하지 않는 이유를 정리한다.
+
+
 
 ### 1주차 완료 조건
 
@@ -272,7 +305,11 @@ deepeval test run tests/evals/test_first_eval.py -v
 
 ---
 
+
+
 ## 2주차 — 메트릭 선택과 custom rubric
+
+
 
 ### 세션 1: 메트릭 선택법
 
@@ -280,21 +317,25 @@ deepeval test run tests/evals/test_first_eval.py -v
 
 - [ ] 아래 표에서 현재 평가 대상에 필요한 2~3개만 고른다.
 
-| 평가 질문 | 후보 메트릭 | 주로 진단하는 대상 |
-|---|---|---|
-| 답변이 질문에 관련 있는가? | `AnswerRelevancyMetric` | generator/final answer |
-| 답변의 주장이 검색 문서에 근거하는가? | `FaithfulnessMetric` | RAG generator |
-| 검색 결과에 불필요한 내용이 많은가? | `ContextualRelevancyMetric` | retriever |
-| 필요한 근거를 빠뜨렸는가? | `ContextualRecallMetric` | retriever |
-| 중요한 근거가 위에 랭크되었는가? | `ContextualPrecisionMetric` | retriever/reranker |
-| 정해진 도구를 올바르게 호출했는가? | `ToolCorrectnessMetric` | agent |
-| 전체 과업을 달성했는가? | `TaskCompletionMetric` | traced agent |
-| 제품 고유 기준을 만족하는가? | `GEval` | 요구사항에 따라 결정 |
-| 출력이 JSON schema를 만족하는가? | `JsonCorrectnessMetric` 또는 결정적 검사 | structured output |
-| 대화 전체가 목적을 달성했는가? | conversational metrics | multi-turn chatbot |
+
+| 평가 질문                   | 후보 메트릭                            | 주로 진단하는 대상             |
+| ----------------------- | --------------------------------- | ---------------------- |
+| 답변이 질문에 관련 있는가?         | `AnswerRelevancyMetric`           | generator/final answer |
+| 답변의 주장이 검색 문서에 근거하는가?   | `FaithfulnessMetric`              | RAG generator          |
+| 검색 결과에 불필요한 내용이 많은가?    | `ContextualRelevancyMetric`       | retriever              |
+| 필요한 근거를 빠뜨렸는가?          | `ContextualRecallMetric`          | retriever              |
+| 중요한 근거가 위에 랭크되었는가?      | `ContextualPrecisionMetric`       | retriever/reranker     |
+| 정해진 도구를 올바르게 호출했는가?     | `ToolCorrectnessMetric`           | agent                  |
+| 전체 과업을 달성했는가?           | `TaskCompletionMetric`            | traced agent           |
+| 제품 고유 기준을 만족하는가?        | `GEval`                           | 요구사항에 따라 결정            |
+| 출력이 JSON schema를 만족하는가? | `JsonCorrectnessMetric` 또는 결정적 검사 | structured output      |
+| 대화 전체가 목적을 달성했는가?       | conversational metrics            | multi-turn chatbot     |
+
 
 - [ ] 선택한 각 메트릭에 대해 required test-case fields를 공식 문서에서 확인한다.
 - [ ] 각 메트릭 점수가 낮을 때 담당자가 취할 수정 행동을 한 줄로 적는다.
+
+
 
 ### 세션 2: G-Eval rubric 작성
 
@@ -304,12 +345,16 @@ deepeval test run tests/evals/test_first_eval.py -v
 - [ ] 명백한 pass 3개, 명백한 fail 3개, 애매한 경계 사례 4개를 준비한다.
 - [ ] judge의 reason을 읽고 rubric이 의도대로 해석되는지 검토한다.
 
+
+
 ### 세션 3: 기준 기반 vs 기준 없는 평가
 
 - [ ] reference-based metric과 referenceless metric의 차이를 설명한다.
 - [ ] 개발/회귀 테스트에는 사람이 검토한 reference를 우선 사용한다.
 - [ ] production sampling처럼 정답 라벨이 없는 상황에는 referenceless metric만 사용해야 하는 이유를 정리한다.
 - [ ] referenceless 점수를 제품의 절대 진실로 해석하지 않는다는 운영 원칙을 적는다.
+
+
 
 ### 세션 4: 실패 진단 실험
 
@@ -323,6 +368,8 @@ deepeval test run tests/evals/test_first_eval.py -v
 - [ ] 각 결함을 어떤 메트릭이 잡고 어떤 메트릭은 놓치는지 표로 기록한다.
 - [ ] 하나의 종합 점수만으로는 원인 분석이 어려운 이유를 설명한다.
 
+
+
 ### 2주차 완료 조건
 
 - [ ] 표준 메트릭 2~3개와 custom metric 1개를 선택했다.
@@ -331,22 +378,30 @@ deepeval test run tests/evals/test_first_eval.py -v
 
 ---
 
+
+
 ## 3주차 — 평가 데이터셋과 회귀 테스트
+
+
 
 ### 세션 1: Golden과 Test Case
 
 - [ ] `Golden`은 재사용할 입력과 기대 정보를 담고, 실행 중 `actual_output` 등의 런타임 값이 채워져 `LLMTestCase`가 된다는 관계를 설명한다.
 - [ ] 아래 범주로 최소 20개 golden을 설계한다.
 
-| 범주 | 권장 개수 | 예시 |
-|---|---:|---|
-| 대표 정상 흐름 | 6 | 가장 흔한 사용자 질문 |
-| 경계·모호한 입력 | 4 | 정보 부족, 복합 질문 |
-| 알려진 과거 결함 | 4 | 이미 발견했던 regression |
-| 안전·정책·PII | 3 | 민감정보 요청, 위험한 지시 |
-| 형식·도구 호출 | 3 | JSON, 특정 tool/argument 요구 |
+
+| 범주        | 권장 개수 | 예시                        |
+| --------- | ----- | ------------------------- |
+| 대표 정상 흐름  | 6     | 가장 흔한 사용자 질문              |
+| 경계·모호한 입력 | 4     | 정보 부족, 복합 질문              |
+| 알려진 과거 결함 | 4     | 이미 발견했던 regression        |
+| 안전·정책·PII | 3     | 민감정보 요청, 위험한 지시           |
+| 형식·도구 호출  | 3     | JSON, 특정 tool/argument 요구 |
+
 
 - [ ] 각 golden에 왜 필요한지와 예상 실패 위험을 metadata 또는 별도 문서에 기록한다.
+
+
 
 ### 세션 2: 로컬 dataset
 
@@ -362,12 +417,16 @@ deepeval test run tests/evals/test_first_eval.py -v
 {"input":"배송지 변경은 언제까지 가능한가요?","expected_output":"출고 전에 고객센터를 통해 변경할 수 있습니다.","context":["배송지는 상품 출고 전에만 변경 가능하다."]}
 ```
 
+
+
 ### 세션 3: pytest parameterization
 
 - [ ] golden을 순회하며 실제 앱 callback으로 `actual_output`을 생성한다.
 - [ ] 생성한 test case를 `pytest.mark.parametrize`와 `assert_test()`에 연결한다.
 - [ ] 테스트 ID를 읽기 쉽게 만들어 실패한 golden을 바로 찾게 한다.
 - [ ] smoke dataset과 full regression dataset을 pytest marker로 나눈다.
+
+
 
 ### 세션 4: 데이터 품질 리뷰
 
@@ -377,6 +436,8 @@ deepeval test run tests/evals/test_first_eval.py -v
 - [ ] synthetic data는 초기 coverage 확대에만 사용하고, 배포 gate에 넣기 전에 사람이 검토한다.
 - [ ] prompt/model 버전이 바뀌어도 동일 golden으로 재평가할 수 있게 런타임 출력은 golden에 고정하지 않는다.
 
+
+
 ### 3주차 완료 조건
 
 - [ ] 20개 이상의 reviewed golden이 로컬 파일에 있다.
@@ -385,6 +446,8 @@ deepeval test run tests/evals/test_first_eval.py -v
 - [ ] 실패 케이스가 어떤 요구사항을 보호하는지 추적할 수 있다.
 
 ---
+
+
 
 ## 4주차 — 시스템 유형별 심화 과정
 
@@ -397,19 +460,22 @@ deepeval test run tests/evals/test_first_eval.py -v
 - [ ] `@observe`, trace, span의 관계를 읽고 trace-level과 span-level test case의 차이를 설명한다.
 - [ ] instrumentation이 필요 없는 offline eval과 tracing이 유용한 agent/component eval을 구분한다.
 
+
+
 ### 트랙 A: RAG 평가
 
 - [ ] `input`, `expected_output`, `context`, `retrieval_context`, `actual_output`을 모두 구분해 기록한다.
 - [ ] retriever에 `ContextualRecall`, `ContextualPrecision` 또는 `ContextualRelevancy`를 적용한다.
 - [ ] generator에 `AnswerRelevancy`와 `Faithfulness`를 적용한다.
 - [ ] 다음 네 조합을 재현한다.
-
   - 좋은 검색 + 좋은 생성
   - 좋은 검색 + 근거 없는 생성
   - 누락된 검색 + 그럴듯한 생성
   - 올바른 문서 포함 + 과도한 잡음
 
 - [ ] 낮은 faithfulness는 주로 generator 문제이고, 낮은 contextual score는 주로 retriever/reranker 문제라는 진단 가설을 검증한다.
+
+
 
 ### 트랙 B: Agent 평가
 
@@ -419,12 +485,16 @@ deepeval test run tests/evals/test_first_eval.py -v
 - [ ] 최종 답변은 좋아도 불필요한 도구 호출이 있는 사례를 만든다.
 - [ ] 올바른 도구를 호출했지만 최종 과업에 실패한 사례를 만든다.
 
+
+
 ### 트랙 C: 다중 턴 대화 평가
 
 - [ ] `ConversationalTestCase`와 `Turn`으로 3턴 이상의 대화를 표현한다.
 - [ ] 대화 단위 metric과 단일 답변 metric을 혼용하지 않는다.
 - [ ] role adherence, knowledge retention, conversation relevancy/completeness 중 목적에 맞는 것을 선택한다.
 - [ ] 이전 턴의 사용자 정보를 잊는 사례와 역할을 이탈하는 사례를 만든다.
+
+
 
 ### 선택 실습: 일반 SDET 자산에 적용
 
@@ -435,6 +505,8 @@ iOS 자동화에 직접 결합할 필요는 없다. 관심이 있다면 아래 �
 - [ ] 버그 리포트 초안 생성기의 재현 절차 완전성과 추측 억제를 평가한다.
 - [ ] AI 기능이 있는 앱이라면 UI 테스트는 화면 흐름을, DeepEval은 백엔드 응답 품질을 각각 담당하게 분리한다.
 
+
+
 ### 4주차 완료 조건
 
 - [ ] end-to-end 실패와 component-level 실패를 구분할 수 있다.
@@ -443,7 +515,11 @@ iOS 자동화에 직접 결합할 필요는 없다. 관심이 있다면 아래 �
 
 ---
 
+
+
 ## 5주차 — 신뢰도, 임계값, 비용, 디버깅
+
+
 
 ### 세션 1: LLM-as-a-Judge의 한계
 
@@ -451,6 +527,8 @@ iOS 자동화에 직접 결합할 필요는 없다. 관심이 있다면 아래 �
 - [ ] 표현, prompt, judge 모델, metric 버전 변화가 점수에 영향을 줄 수 있음을 기록한다.
 - [ ] judge reason이 그럴듯하다는 이유만으로 자동 수용하지 않고 원문과 rubric을 함께 검토한다.
 - [ ] 고위험 release gate는 결정적 검사, 사람 라벨, LLM judge를 함께 사용한다.
+
+
 
 ### 세션 2: threshold 보정
 
@@ -460,6 +538,8 @@ iOS 자동화에 직접 결합할 필요는 없다. 관심이 있다면 아래 �
 - [ ] 비즈니스 위험에 따라 어느 오류가 더 비싼지 정한다.
 - [ ] 가장 보기 좋은 숫자를 임의로 고르지 않고, 이 분석으로 threshold를 결정한다.
 - [ ] threshold와 선택 근거를 `evals/calibration/`에 기록한다.
+
+
 
 ### 세션 3: 반복성과 flaky eval
 
@@ -473,6 +553,8 @@ deepeval test run tests/evals -r 3
 - [ ] 점수가 threshold 주변에서 반복적으로 뒤집히면 먼저 rubric과 사례의 모호함을 수정한다.
 - [ ] flaky를 숨기기 위해 threshold를 무조건 낮추지 않는다.
 - [ ] 모델/프롬프트 변경 비교에서는 같은 dataset, metric, judge 설정을 유지한다.
+
+
 
 ### 세션 4: 속도·비용·오류 처리
 
@@ -493,6 +575,8 @@ deepeval test run tests/evals -n 4
 - [ ] `--ignore-errors`를 release gate의 기본값으로 사용하지 않는다. 인프라 오류가 품질 통과로 오인될 수 있기 때문이다.
 - [ ] 테스트 실행별 케이스 수, metric 수, 호출 횟수, 대략적 비용과 소요 시간을 기록한다.
 
+
+
 ### 5주차 완료 조건
 
 - [ ] threshold가 사람 판단 데이터로 보정되었다.
@@ -502,7 +586,11 @@ deepeval test run tests/evals -n 4
 
 ---
 
+
+
 ## 6주차 — CI/CD와 캡스톤
+
+
 
 ### 세션 1: CI용 suite 설계
 
@@ -517,6 +605,8 @@ deepeval test run tests/evals -n 4
 deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=short
 ```
 
+
+
 ### 세션 2: 변경 전후 비교
 
 - [ ] baseline prompt/model/config로 전체 dataset을 실행한다.
@@ -524,6 +614,8 @@ deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=sho
 - [ ] 평균 점수만 비교하지 않고 케이스별 regression과 improvement를 확인한다.
 - [ ] 중요한 케이스 하나의 큰 regression이 평균에 가려지지 않도록 hard gate를 둔다.
 - [ ] 변경된 출력, 점수, judge reason, 실행 설정을 함께 보관한다.
+
+
 
 ### 세션 3: 캡스톤 구현
 
@@ -547,6 +639,8 @@ deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=sho
 - [ ] 재현 가능한 실행 명령
 - [ ] 실패 triage 문서
 
+
+
 ### 세션 4: 최종 리뷰
 
 - [ ] 다른 사람이 README만 보고 환경을 만들고 테스트를 실행할 수 있다.
@@ -555,6 +649,8 @@ deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=sho
 - [ ] dataset에 대표·경계·과거 결함·안전 사례가 포함되었다.
 - [ ] API 키와 민감한 production 데이터가 저장소에 없다.
 - [ ] framework 업그레이드 시 release note 확인과 작은 검증 suite 실행 절차가 있다.
+
+
 
 ### 6주차 완료 조건
 
@@ -565,7 +661,11 @@ deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=sho
 
 ---
 
+
+
 ## 최종 자기 점검
+
+
 
 ### 개념
 
@@ -575,6 +675,8 @@ deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=sho
 - [ ] reference-based와 referenceless metric을 구분할 수 있다.
 - [ ] end-to-end, trace, span의 평가 범위를 구분할 수 있다.
 
+
+
 ### 구현
 
 - [ ] `LLMTestCase`, `Golden`, `EvaluationDataset`을 사용할 수 있다.
@@ -582,6 +684,8 @@ deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=sho
 - [ ] custom G-Eval rubric을 작고 명확하게 작성할 수 있다.
 - [ ] pytest parameterization과 marker로 eval suite를 구조화할 수 있다.
 - [ ] `deepeval test run`의 repeat, cache, parallel 옵션을 목적에 맞게 사용한다.
+
+
 
 ### 품질 엔지니어링
 
@@ -594,6 +698,8 @@ deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=sho
 
 ---
 
+
+
 ## 자주 빠지는 함정
 
 - [ ] **문자열 완전 일치만 사용**: 유효한 표현 변형을 실패시킨다.
@@ -604,10 +710,12 @@ deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=sho
 - [ ] **RAG의 context와 retrieval context를 혼동**: retriever와 generator 진단이 뒤바뀐다.
 - [ ] **judge reason을 사실로 간주**: 이유도 모델 출력이므로 검토 대상이다.
 - [ ] **API 오류를 ignore하고 통과 처리**: 평가하지 못한 상태를 품질 합격으로 오인한다.
-- [ ] **키를 `.env`와 함께 커밋**: 발견 즉시 폐기·재발급해야 한다.
+- [ ] **키를** `.env`**와 함께 커밋**: 발견 즉시 폐기·재발급해야 한다.
 - [ ] **DeepEval을 일반 UI 자동화 대체재로 사용**: 결정적 UI 동작은 기존 테스트 도구가 더 적합하다.
 
 ---
+
+
 
 ## 공식 자료 읽기 순서
 
@@ -629,6 +737,8 @@ deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=sho
 
 ---
 
+
+
 ## 학습 기록 템플릿
 
 각 세션이 끝날 때 아래를 복사해 기록한다.
@@ -646,6 +756,8 @@ deepeval test run tests/evals --mark "smoke" --exit-on-first-failure -- --tb=sho
 - 다음에 dataset에 추가할 golden:
 - 남은 질문:
 ```
+
+
 
 ### 최종 완료 정의
 
