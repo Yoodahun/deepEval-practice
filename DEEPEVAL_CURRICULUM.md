@@ -315,6 +315,8 @@ deepeval test run tests/evals/test_first_eval.py -v
 
 표준 메트릭은 이름이 좋아 보인다는 이유로 고르지 않고, “이 점수가 낮으면 어느 컴포넌트를 고쳐야 하는가?”로 선택한다. 처음에는 전체 suite에 5개 이하를 권장한다.
 
+직접 코딩하는 실습은 [`tests/evals/week2_session1_metric_selection_exercise.py`](tests/evals/week2_session1_metric_selection_exercise.py)에서 진행한다. TODO를 완성하고 `--check`로 구조를 검사한 뒤 `--run`으로 결함별 점수와 reason을 관찰한다. 막혔을 때만 [`tests/evals/week2_session1_metric_selection_solution.py`](tests/evals/week2_session1_metric_selection_solution.py)와 비교한다.
+
 - [ ] 아래 표에서 현재 평가 대상에 필요한 2~3개만 고른다.
 
 
