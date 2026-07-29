@@ -176,7 +176,7 @@ python -c 'import os; print("OPENAI_API_KEY loaded:", bool(os.getenv("OPENAI_API
 
 ### 4. 첫 DeepEval 테스트
 
-- [ ] `tests/evals/test_first_eval.py`를 만들고 아래 코드를 입력한다.
+- [ ] `tests/evals/test_setup_first_eval.py`를 만들고 아래 코드를 입력한다.
 
 ```python
 from deepeval import assert_test
@@ -210,7 +210,7 @@ def test_refund_answer_is_correct():
 - [x] DeepEval CLI로 실행한다. 일반 `pytest`도 동작할 수 있지만 학습과 실제 eval suite에서는 DeepEval의 추가 기능이 붙는 전용 명령을 사용한다.
 
 ```bash
-deepeval test run tests/evals/test_first_eval.py -v
+deepeval test run tests/evals/test_setup_first_eval.py -v
 ```
 
 - [x] `actual_output`을 “환불은 불가능합니다”로 바꾸어 테스트가 실패하는지 확인한다.

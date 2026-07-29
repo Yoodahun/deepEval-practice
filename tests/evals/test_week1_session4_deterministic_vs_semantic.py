@@ -6,21 +6,21 @@
 실행 방법:
 
     # API 호출 없이 결정적 계약만 검사
-    pytest tests/evals/test_session4_deterministic_vs_semantic.py::\
+    pytest tests/evals/test_week1_session4_deterministic_vs_semantic.py::\
         test_deterministic_response_contract -v
 
     # parse, key, length 중 하나가 실패하는 모습을 확인
     DEEPEVAL_SESSION4_CONTRACT_FAIL=parse pytest \
-        tests/evals/test_session4_deterministic_vs_semantic.py::\
+        tests/evals/test_week1_session4_deterministic_vs_semantic.py::\
         test_deterministic_response_contract -v
 
     # 결정적 검사와 의미 기반 검사 모두 실행(LLM judge API 호출)
     deepeval test run \
-        tests/evals/test_session4_deterministic_vs_semantic.py -v
+        tests/evals/test_week1_session4_deterministic_vs_semantic.py -v
 
     # 형식은 정상이지만 의미 품질이 나쁜 답변을 judge가 잡는지 확인
     DEEPEVAL_SESSION4_SEMANTIC_FAIL=1 deepeval test run \
-        tests/evals/test_session4_deterministic_vs_semantic.py -v
+        tests/evals/test_week1_session4_deterministic_vs_semantic.py -v
 """
 
 import json

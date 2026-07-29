@@ -2,10 +2,10 @@
 
 실행 방법:
 
-    python tests/evals/test_session3_metric_methods.py measure
-    python tests/evals/test_session3_metric_methods.py evaluate
-    deepeval test run tests/evals/test_session3_metric_methods.py -v
-    DEEPEVAL_SESSION3_FAIL=1 deepeval test run tests/evals/test_session3_metric_methods.py -v
+    python tests/evals/test_week1_session3_metric_methods.py measure
+    python tests/evals/test_week1_session3_metric_methods.py evaluate
+    deepeval test run tests/evals/test_week1_session3_metric_methods.py -v
+    DEEPEVAL_SESSION3_FAIL=1 deepeval test run tests/evals/test_week1_session3_metric_methods.py -v
 
 각 명령은 LLM judge API를 호출하므로 소량의 비용이 발생할 수 있다.
 """

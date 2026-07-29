@@ -1,3 +1,5 @@
+"""준비 단계: 처음 실행하는 단일 DeepEval 테스트."""
+
 from deepeval import assert_test
 from deepeval.metrics import GEval
 from deepeval.test_case import LLMTestCase, SingleTurnParams
