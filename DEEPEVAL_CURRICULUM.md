@@ -2,7 +2,7 @@
 
 > - 대상: Python, pytest, Appium 경험이 있지만 LLM 평가와 DeepEval은 처음인 SDET
 > - 전체 권장 기간: 준비 단계를 포함해 약 7~8주
-> - 현재 남은 분량: 약 5~6주, 20회, 회당 60~90분
+> - 현재 남은 분량: 약 5~6주, 19회, 회당 60~90분
 > - 기준 버전: DeepEval 4.x, 저장소 설치 버전 4.1.4
 > - 상세 문서: [`curriculum/`](curriculum/README.md)
 
@@ -10,14 +10,14 @@
 
 ## 현재 진행 상태
 
-준비 단계, 1주차 전체, 2주차 세션 1은 완료한 것으로 본다. 완료 세션 안에 과거 미체크 기록이 남아 있더라도 남은 필수 학습량에는 포함하지 않는다.
+준비 단계, 1주차 전체, 2주차 세션 1~2는 완료한 것으로 본다. 완료 세션 안에 과거 미체크 기록이 남아 있더라도 남은 필수 학습량에는 포함하지 않는다.
 
 | 구간 | 상태 | 권장 분량 | 상세 문서 | 핵심 산출물 |
 | --- | --- | ---: | --- | --- |
 | 준비 단계 | 완료 | 2~3회 | [환경과 첫 평가](curriculum/00_setup.md) | pass/fail 첫 eval |
 | 1주차 | 완료 | 4회 | [평가의 테스트 모델](curriculum/week1_evaluation_foundations.md) | field와 assertion 구분 |
-| 2주차 세션 1 | 완료 | 1회 | [metric과 GEval](curriculum/week2_metrics_and_geval.md) | 결함-metric 매핑 |
-| 2주차 세션 2~4 | 예정 | 3회 | [metric과 GEval](curriculum/week2_metrics_and_geval.md) | custom rubric과 경계 사례 |
+| 2주차 세션 1~2 | 완료 | 2회 | [metric과 GEval](curriculum/week2_metrics_and_geval.md) | 결함-metric 매핑과 custom rubric |
+| 2주차 세션 3~4 | 예정 | 2회 | [metric과 GEval](curriculum/week2_metrics_and_geval.md) | 경계 사례와 reference 전략 |
 | 3주차 | 예정 | 4회 | [dataset과 regression](curriculum/week3_dataset_and_regression.md) | 최소 앱과 20개 Golden |
 | 4주차 | 예정 | 4회 | [RAG 평가](curriculum/week4_rag_evaluation.md) | retriever/generator 진단 suite |
 | 5주차 | 예정 | 5회 | [보정과 신뢰도](curriculum/week5_calibration_and_reliability.md) | 사람 라벨 기반 threshold |
@@ -31,9 +31,9 @@
   ↓
 완료: LLMTestCase와 assertion 구분
   ↓
-현재: 표준 metric 선택
+완료: 표준 metric과 custom GEval
   ↓
-custom GEval과 경계 사례
+현재: 경계 사례와 reference 전략
   ↓
 최소 앱 → Golden → EvaluationDataset → pytest regression
   ↓

@@ -1,19 +1,21 @@
 # 2주차 — 표준 metric과 custom `GEval`
 
-> - 상태: 세션 1 완료, 세션 2~4 예정
-> - 남은 권장 분량: 3회
+> - 상태: 세션 1~2 완료, 세션 3~4 예정
+> - 남은 권장 분량: 2회
 > - 핵심 질문: 이 score가 낮을 때 실제로 무엇을 고칠 것인가?
 
 2주차는 metric 이름을 많이 암기하는 주차가 아니다. 사용자 위험, 필요한 test-case field, 낮은 score가 가리키는 수정 대상을 연결한다. 하나의 metric에 독립적인 요구사항을 몰아넣지 않고 표준 metric과 제품 고유 custom metric의 책임을 나눈다.
 
 ## 주차 학습 지도
 
-| 세션 | 상태 | 난이도 | 핵심 산출물 |
-| --- | --- | ---: | --- |
-| 1. 표준 metric 선택 | 완료 | 2/5 | 결함-metric-수정 대상 매핑 |
-| 2. 단일 품질 축 `GEval` | 예정 | 3/5 | custom metric 1개 |
-| 3. 경계 사례 검증 | 예정 | 3/5 | pass/fail/경계 사례 6개 |
-| 4. reference와 실패 진단 | 예정 | 2/5 | reference 원칙과 진단표 |
+
+| 세션                  | 상태  | 난이도 | 핵심 산출물             |
+| ------------------- | --- | --- | ------------------ |
+| 1. 표준 metric 선택     | 완료  | 2/5 | 결함-metric-수정 대상 매핑 |
+| 2. 단일 품질 축 `GEval`  | 완료  | 3/5 | custom metric 1개   |
+| 3. 경계 사례 검증         | 예정  | 3/5 | pass/fail/경계 사례 6개 |
+| 4. reference와 실패 진단 | 예정  | 2/5 | reference 원칙과 진단표  |
+
 
 ## 세션 1: 표준 metric 선택 — 완료
 
@@ -31,15 +33,17 @@
 
 ### 결함별 선택 기준
 
-| 관찰한 결함 | metric | DeepEval 4.1.4 required field | 먼저 수정할 대상 |
-| --- | --- | --- | --- |
-| 질문과 무관한 답변 | `AnswerRelevancyMetric` | `input`, `actual_output` | generator prompt/output |
-| 검색 근거와 모순되는 주장 | `FaithfulnessMetric` | `input`, `actual_output`, `retrieval_context` | generator grounding |
-| 검색 결과에 잡음이 많음 | `ContextualRelevancyMetric` | `input`, `retrieval_context` | retriever 조건/top-k |
+
+| 관찰한 결함         | metric                      | DeepEval 4.1.4 required field                 | 먼저 수정할 대상               |
+| -------------- | --------------------------- | --------------------------------------------- | ----------------------- |
+| 질문과 무관한 답변     | `AnswerRelevancyMetric`     | `input`, `actual_output`                      | generator prompt/output |
+| 검색 근거와 모순되는 주장 | `FaithfulnessMetric`        | `input`, `actual_output`, `retrieval_context` | generator grounding     |
+| 검색 결과에 잡음이 많음  | `ContextualRelevancyMetric` | `input`, `retrieval_context`                  | retriever 조건/top-k      |
+
 
 metric required field는 버전에 따라 바뀔 수 있으므로 설치 버전과 공식 문서를 기준으로 다시 확인한다. 학생용 실습의 구조 검사가 공식 required field보다 교육 목적상 더 많은 field를 요구할 수 있다는 점도 구분한다.
 
-## 세션 2: 단일 품질 축으로 `GEval` 만들기
+## 세션 2: 단일 품질 축으로 `GEval` 만들기 — 완료
 
 > - 예상 시간: 60~90분
 > - 선행 조건: 세션 1 완료
@@ -70,6 +74,8 @@ sed -n '1,260p' tests/evals/week2_session2_geval_rubric_exercise.py
 evals/metrics/refund_completeness.py
 ```
 
+
+
 ### 왜 배우는가
 
 표준 metric은 일반적인 관련성이나 근거 충실성을 평가하지만, 제품이 요구하는 “좋은 환불 안내” 전체를 그대로 알지는 못한다. 이 세션에서는 환불 답변이 사용자의 다음 행동에 필요한 정보를 충분히 주는지 평가하는 custom metric을 만든다.
@@ -79,46 +85,56 @@ evals/metrics/refund_completeness.py
 - 포함: 환불 가능 기간, 필요한 정보, 요청 방법이 충분히 안내되었는가?
 - 제외: JSON schema, 문장 길이, 존댓말, retrieval 품질
 
+
+
 ### 1. metric 계약 작성
 
 코드를 작성하기 전에 다음을 문서화한다.
 
-| 계약 항목 | 예시 |
-| --- | --- |
-| 보호할 사용자 위험 | 중요한 절차가 빠져 사용자가 환불을 진행하지 못함 |
-| 평가 품질 축 | 환불 안내 완전성 |
-| required field | `input`, `actual_output`, `expected_output` |
-| 낮을 때 수정할 대상 | generator prompt 또는 답변 구성 로직 |
-| 평가하지 않는 것 | 형식, 어조, retrieval 성능 |
 
-- [ ] deterministic requirement 한 개를 `GEval`에서 제외하고 pytest assertion으로 옮긴다.
-- [ ] `criteria`가 한 품질 축만 다루게 쓴다.
-- [ ] criteria가 실제로 읽는 field만 `evaluation_params`에 넣는다.
-- [ ] 생성 함수 이름을 `make_refund_completeness_metric()`으로 작성한다.
-- [ ] judge model과 임시 threshold를 명시한다.
+| 계약 항목          | 예시                                          |
+| -------------- | ------------------------------------------- |
+| 보호할 사용자 위험     | 중요한 절차가 빠져 사용자가 환불을 진행하지 못함                 |
+| 평가 품질 축        | 환불 안내 완전성                                   |
+| required field | `input`, `actual_output`, `expected_output` |
+| 낮을 때 수정할 대상    | generator prompt 또는 답변 구성 로직                |
+| 평가하지 않는 것      | 형식, 어조, retrieval 성능                        |
+
+
+- [x] deterministic requirement 한 개를 `GEval`에서 제외하고 pytest assertion으로 옮긴다.
+- [x] `criteria`가 한 품질 축만 다루게 쓴다.
+- [x] criteria가 실제로 읽는 field만 `evaluation_params`에 넣는다.
+- [x] 생성 함수 이름을 `make_refund_completeness_metric()`으로 작성한다.
+- [x] 기본 judge model을 확인하고 임시 threshold를 명시한다.
+
+
 
 ### 2. 명백한 사례로 방향 확인
 
 처음에는 네 사례만 사용한다.
 
-- [ ] 기간·필요 정보·요청 방법을 모두 담은 pass 2개
-- [ ] 중요한 절차가 빠졌거나 정책과 모순된 fail 2개
-- [ ] import와 field 구성은 API 없이 검사
-- [ ] 네 사례만 judge에 실행하고 score와 reason 기록
+- [x] 기간·필요 정보·요청 방법을 모두 담은 pass 2개
+- [x] 중요한 절차가 빠졌거나 정책과 모순된 fail 2개
+- [x] import와 field 구성은 API 없이 검사
+- [x] 네 사례만 judge에 실행하고 score와 reason 기록
 
 reason이 예상과 다르면 threshold부터 바꾸지 않는다. 먼저 criteria, reference, 사례 자체의 모호함을 확인한다.
 
 ### 완료 조건
 
-- [ ] custom metric이 여러 테스트에서 import 가능하다.
-- [ ] metric이 평가하는 것과 평가하지 않는 것을 설명할 수 있다.
-- [ ] 명백한 pass/fail 네 사례가 기대 방향으로 구분된다.
+- [x] custom metric이 여러 테스트에서 import 가능하다.
+- [x] metric이 평가하는 것과 평가하지 않는 것을 설명할 수 있다.
+- [x] 명백한 pass/fail 네 사례가 기대 방향으로 구분된다.
+
+
 
 ## 세션 3: 경계 사례로 rubric 검증
 
 > - 예상 시간: 60~90분
 > - 선행 조건: 세션 2 완료
 > - 핵심 산출물: `evals/calibration/week2_geval_observations.md`
+
+
 
 ### 왜 배우는가
 
@@ -140,6 +156,8 @@ CLI 전용 실습이므로 pytest 자동 수집이 필요하지 않다면 `test_
 - [ ] judge 실행 전에 `human_expected`와 한 줄 근거를 기록한다.
 - [ ] `clear_pass_001`, `boundary_missing_order_id`처럼 안정적인 ID를 붙인다.
 
+
+
 ### 2. reason 비교
 
 1. `metric.measure()`로 한 사례를 디버깅한다.
@@ -151,17 +169,23 @@ CLI 전용 실습이므로 pytest 자동 수집이 필요하지 않다면 `test_
 - [ ] 같은 사례를 재실행해 변경 전후를 기록한다.
 - [ ] 애매한 사례는 5주차 calibration 후보로 남긴다.
 
+
+
 ### 완료 조건
 
 - [ ] 여섯 사례에 사람 예상, score, reason이 기록되어 있다.
 - [ ] rubric 수정 이유와 효과를 설명할 수 있다.
 - [ ] 현재 threshold가 아직 임시 값임을 명시했다.
 
+
+
 ## 세션 4: reference 전략과 실패 진단
 
 > - 예상 시간: 60~90분
 > - 선행 조건: 세션 1~3 완료
 > - 핵심 산출물: reference 운영 원칙과 결함 진단표
+
+
 
 ### reference-based와 referenceless
 
@@ -175,18 +199,24 @@ CLI 전용 실습이므로 pytest 자동 수집이 필요하지 않다면 `test_
 - [ ] 중요한 production 실패는 사람이 검토해 다음 regression dataset으로 환류한다.
 - [ ] referenceless score를 제품 품질의 절대 진실로 사용하지 않는다.
 
+
+
 ### 종합 score 대신 진단표
 
-| 결함 | 직접적인 metric | 낮을 때 먼저 볼 대상 | 놓칠 수 있는 문제 |
-| --- | --- | --- | --- |
-| 질문에서 이탈 | Answer Relevancy | generator | 근거가 맞는지는 모름 |
-| 근거 없는 주장 | Faithfulness | generator grounding | 질문에 유용한지는 별개 |
-| noisy retrieval | Contextual Relevancy | retriever | 필요한 근거 누락 여부는 별개 |
-| 절차 불완전 | custom `GEval` | 답변 구성 | retriever 원인은 직접 확정 못 함 |
+
+| 결함              | 직접적인 metric          | 낮을 때 먼저 볼 대상        | 놓칠 수 있는 문제              |
+| --------------- | -------------------- | ------------------- | ----------------------- |
+| 질문에서 이탈         | Answer Relevancy     | generator           | 근거가 맞는지는 모름             |
+| 근거 없는 주장        | Faithfulness         | generator grounding | 질문에 유용한지는 별개            |
+| noisy retrieval | Contextual Relevancy | retriever           | 필요한 근거 누락 여부는 별개        |
+| 절차 불완전          | custom `GEval`       | 답변 구성               | retriever 원인은 직접 확정 못 함 |
+
 
 - [ ] 각 metric이 놓칠 수 있는 결함을 한 개씩 적는다.
 - [ ] 실패 결과에 `suspected_component`를 기록할 방식을 정한다.
 - [ ] Agent trace 결함은 아직 포함하지 않고 선택 심화로 미룬다.
+
+
 
 ## 2주차 완료 조건
 
@@ -194,6 +224,8 @@ CLI 전용 실습이므로 pytest 자동 수집이 필요하지 않다면 `test_
 - [ ] custom metric이 pass/fail/경계 사례에서 의도한 신호를 낸다.
 - [ ] reference가 없는 사례를 reviewed Golden으로 환류하는 원칙이 있다.
 - [ ] 낮은 score를 구체적인 수정 대상으로 연결할 수 있다.
+
+
 
 ## 막히기 쉬운 지점
 
