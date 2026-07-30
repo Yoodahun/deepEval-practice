@@ -43,7 +43,32 @@ metric required field는 버전에 따라 바뀔 수 있으므로 설치 버전�
 
 > - 예상 시간: 60~90분
 > - 선행 조건: 세션 1 완료
-> - 핵심 산출물: `evals/metrics/refund_completeness.py`
+> - 핵심 산출물: TODO를 완성한 custom metric과 네 개의 pass/fail 관찰 결과
+
+학생용 실습:
+
+- [GEval rubric 실습](../tests/evals/week2_session2_geval_rubric_exercise.py)
+
+처음에는 custom metric을 별도 모듈로 추출하려고 하지 말고 학생용 파일의 TODO 네 개를 순서대로 완성한다.
+
+```bash
+# 1. 현재 TODO와 안내를 읽는다.
+sed -n '1,260p' tests/evals/week2_session2_geval_rubric_exercise.py
+
+# 2. API 호출 없이 TODO 구현을 검사한다.
+.venv/bin/python tests/evals/week2_session2_geval_rubric_exercise.py --check
+
+# 3. 구조 검사를 통과한 뒤에만 네 사례를 judge로 평가한다.
+.venv/bin/python tests/evals/week2_session2_geval_rubric_exercise.py --run
+```
+
+이 탐색 실습에서는 `model` 인자를 생략해 설치된 DeepEval의 기본 judge를 사용한다. `--check`가 실제 기본 model 이름을 출력하므로 학습 기록에 남긴다. 5주차 calibration과 6주차 CI에서는 실행 조건을 재현할 수 있도록 judge model을 명시적으로 고정한다.
+
+실습에서 score와 reason을 확인한 후 다른 세션에서도 재사용할 단계가 되면 `make_refund_completeness_metric()`을 다음 파일로 옮긴다.
+
+```text
+evals/metrics/refund_completeness.py
+```
 
 ### 왜 배우는가
 

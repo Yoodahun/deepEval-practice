@@ -35,8 +35,10 @@ from deepeval.metrics.base_metric import BaseMetric
 from deepeval.test_case import LLMTestCase
 
 
+# input
 QUESTION: Final = "지난주에 산 상품을 환불하려면 어떻게 해야 하나요?"
 
+# 근거
 CLEAN_RETRIEVAL_CONTEXT: Final = [
     (
         "구매 후 30일 이내에는 주문 번호와 함께 고객센터에 요청하면 "
@@ -44,6 +46,7 @@ CLEAN_RETRIEVAL_CONTEXT: Final = [
     )
 ]
 
+# 불필요한 근거들
 NOISY_RETRIEVAL_CONTEXT: Final = [
     *CLEAN_RETRIEVAL_CONTEXT,
     "일반 배송은 결제 완료 후 평균 2~3일이 걸립니다.",
@@ -79,25 +82,25 @@ SCENARIOS: Final = {
 }
 
 METRIC_KEYS: Final = {
-    "answer_relevancy",
-    "faithfulness",
-    "contextual_relevancy",
+    "answer_relevancy", #질문 관련성
+    "faithfulness", #근거 신뢰성
+    "contextual_relevancy", #컨텍스트 관련성
 }
 
 # TODO 1: 각 결함을 가장 직접적으로 진단하는 metric key를 하나씩 적는다.
 # 사용할 수 있는 값: answer_relevancy, faithfulness, contextual_relevancy
 SELECTED_METRICS = {
-    "off_topic_answer": "TODO",
-    "unsupported_claim": "TODO",
-    "noisy_retrieval": "TODO",
+    "off_topic_answer": "answer_relevancy",
+    "unsupported_claim": "faithfulness",
+    "noisy_retrieval": "contextual_relevancy",
 }
 
 # TODO 3: 해당 점수가 낮을 때 담당자가 취할 구체적인 수정 행동을 적는다.
 # 예: "generator prompt에서 질문에 직접 답하도록 지시를 강화한다."
 FIX_ACTIONS = {
-    "answer_relevancy": "TODO",
-    "faithfulness": "TODO",
-    "contextual_relevancy": "TODO",
+    "answer_relevancy": "질문과 무관한 설명을 줄인다.",
+    "faithfulness": "제대로 된 근거를 참조한다.",
+    "contextual_relevancy": "컨텍스트와 관련된 답을 한다.",
 }
 
 
@@ -105,10 +108,17 @@ def make_metric(metric_key: str) -> BaseMetric:
     """metric key에 맞는 DeepEval 표준 메트릭을 만든다."""
     if metric_key == "answer_relevancy":
         # 첫 생성자는 예제로 제공한다.
+        # 답변이 질문에 관련 있는가?
         return AnswerRelevancyMetric(threshold=0.7, include_reason=True)
 
     # TODO 2: 나머지 두 metric key의 생성자를 완성한다.
     # 힌트: 위에서 import한 클래스와 같은 threshold/include_reason을 사용한다.
+    if metric_key == "contextual_relevancy":
+        # 검색결과에 불필요한 내용이 많은가?
+        return ContextualRelevancyMetric(threshold=0.7, include_reason=True)
+    if metric_key == "faithfulness":
+        # 답변의 주장이 검색 문서에 근거하는가?
+        return FaithfulnessMetric(threshold=0.7, include_reason=True)
 
     raise NotImplementedError(f"아직 구현하지 않은 metric입니다: {metric_key}")
 
