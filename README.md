@@ -55,7 +55,17 @@ deepEval-practice/
 │   └── calibration/             # 사람 라벨과 임계값 보정 기록
 ├── tests/
 │   └── evals/                   # pytest 기반 DeepEval 테스트
-├── DEEPEVAL_CURRICULUM.md       # 단계별 학습 커리큘럼
+├── curriculum/                  # 준비 단계와 주차별 상세 커리큘럼
+│   ├── README.md                 # 문서 사용법과 주차별 탐색
+│   ├── 00_setup.md
+│   ├── week1_evaluation_foundations.md
+│   ├── week2_metrics_and_geval.md
+│   ├── week3_dataset_and_regression.md
+│   ├── week4_rag_evaluation.md
+│   ├── week5_calibration_and_reliability.md
+│   ├── week6_ci_and_capstone.md
+│   └── optional_advanced_tracks.md
+├── DEEPEVAL_CURRICULUM.md       # 전체 진행 현황과 주차별 문서 인덱스
 └── requirements-lock.txt        # 고정된 Python 의존성
 ```
 
@@ -138,14 +148,20 @@ assert_test(test_case, [correctness])
 
 ## 학습 로드맵
 
-상세한 실습 순서와 완료 조건은 [DeepEval 실습 커리큘럼](DEEPEVAL_CURRICULUM.md)에서 확인할 수 있습니다.
+[DeepEval 실습 커리큘럼](DEEPEVAL_CURRICULUM.md)은 현재 진행 상태와 전체 학습 순서를 보여주는 인덱스입니다. 세션별 목표, 실습 단계, 권장 파일, 검증 명령과 완료 조건은 [`curriculum/` 주차별 문서](curriculum/README.md)에서 확인할 수 있습니다.
 
-1. 개발 환경과 첫 평가 테스트 구성
-2. 단일 턴 테스트 케이스와 custom metric 설계
-3. Golden 데이터셋 및 회귀 테스트 구축
-4. RAG, 에이전트, 다중 턴 대화 평가
-5. 신뢰도, 비용, 임계값과 flaky 평가 관리
-6. CI/CD 품질 게이트와 최종 평가 파이프라인 구축
+| 구간 | 상세 문서 | 핵심 내용 |
+| --- | --- | --- |
+| 준비 | [환경과 첫 평가](curriculum/00_setup.md) | 설치, API key, 첫 pass/fail eval |
+| 1주차 | [평가의 테스트 모델](curriculum/week1_evaluation_foundations.md) | 평가 계약, test-case field, assertion 분리 |
+| 2주차 | [metric과 GEval](curriculum/week2_metrics_and_geval.md) | 표준 metric, custom rubric, reference 전략 |
+| 3주차 | [dataset과 regression](curriculum/week3_dataset_and_regression.md) | 최소 앱, Golden, JSONL, pytest |
+| 4주차 | [RAG 평가](curriculum/week4_rag_evaluation.md) | end-to-end, retriever, generator 진단 |
+| 5주차 | [보정과 신뢰도](curriculum/week5_calibration_and_reliability.md) | 사람 라벨, threshold, flaky와 비용 |
+| 6주차 | [CI와 캡스톤](curriculum/week6_ci_and_capstone.md) | smoke/full, CI, 변경 비교, 개선 loop |
+| 선택 | [고급 트랙](curriculum/optional_advanced_tracks.md) | tracing, Agent, multi-turn, SDET 응용 |
+
+필수 심화 과정은 환불 고객지원 RAG 하나로 진행합니다. Agent, multi-turn과 tracing은 필수 캡스톤 이후 관심에 따라 하나만 선택합니다.
 
 ## 보안
 

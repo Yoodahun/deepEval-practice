@@ -12,7 +12,7 @@
 - RAG retriever, generator, agent와 대화 품질의 실패 원인을 분리한다.
 - Golden 데이터셋, 임계값 보정, pytest와 CI를 이용해 재현 가능한 회귀 테스트를 만든다.
 
-프로젝트 소개와 실행 방법은 `README.md`, 주차별 학습 순서와 완료 조건은 `DEEPEVAL_CURRICULUM.md`를 기준으로 한다. 의존성 버전은 `requirements-lock.txt`를 따른다.
+프로젝트 소개와 실행 방법은 `README.md`, 전체 학습 순서와 진행 상태는 `DEEPEVAL_CURRICULUM.md`, 세션별 상세 학습 내용과 완료 조건은 `curriculum/`의 주차별 문서를 기준으로 한다. 의존성 버전은 `requirements-lock.txt`를 따른다.
 
 ## 디렉터리 역할
 
@@ -21,8 +21,30 @@
 - `evals/data/`: Golden, JSON, JSONL 등 평가 데이터
 - `evals/metrics/`: 여러 테스트에서 재사용하는 custom metric
 - `evals/calibration/`: 사람 라벨, threshold 선정 근거와 보정 결과
+- `curriculum/`: 준비 단계, 1~6주차와 선택 심화의 상세 학습 문서
 
-기존 구조로 표현할 수 있는 파일을 위해 새로운 최상위 디렉터리를 만들지 않는다. 구조 변경이 필요하면 `README.md`의 프로젝트 구조도 함께 갱신한다.
+`DEEPEVAL_CURRICULUM.md`는 상세 세션을 중복 작성하지 않고 주차별 문서로 연결하는 인덱스로 유지한다. 기존 구조로 표현할 수 있는 파일을 위해 다른 최상위 디렉터리를 추가하지 않는다. 구조 변경이 필요하면 `README.md`의 프로젝트 구조도 함께 갱신한다.
+
+## 커리큘럼 문서 규칙
+
+주차별 상세 문서는 다음 이름을 사용한다.
+
+```text
+curriculum/00_setup.md
+curriculum/week{주차}_{주제}.md
+curriculum/optional_advanced_tracks.md
+```
+
+세부 규칙:
+
+- 루트 `DEEPEVAL_CURRICULUM.md`에는 전체 진행 상태, 주차별 링크, 공통 원칙과 최종 완료 정의만 둔다.
+- 각 주차의 학습 목표, 선행 조건, 난이도, 예상 시간, 실습 단계, 권장 파일, 완료 조건과 흔한 실패는 해당 `curriculum/week...md`에 둔다.
+- 주차별 문서는 `README.md`와 `DEEPEVAL_CURRICULUM.md` 양쪽에서 찾을 수 있어야 한다.
+- 세션 상태를 바꾸면 루트 인덱스의 상태 표와 해당 주차 문서를 함께 갱신한다.
+- 실습 파일을 새로 추가하거나 이름을 바꾸면 해당 주차 문서의 권장 파일과 실행 명령을 함께 갱신한다.
+- 같은 상세 체크리스트를 루트 인덱스와 주차별 파일에 중복 작성하지 않는다.
+- 필수 과정과 선택 심화를 명확히 구분하고, 선택 항목을 필수 완료 조건에 포함하지 않는다.
+- 새 문서는 한국어 설명을 기본으로 하며 DeepEval/Python identifier는 원래 영문을 유지한다.
 
 ## 테스트 파일 명명 규칙
 
@@ -121,7 +143,8 @@ LLM judge 호출이 요청의 핵심이 아니면 검증을 위해 불필요하�
 
 - 학습 문서, 주석과 사용자 안내는 기본적으로 한국어로 작성한다.
 - Python 클래스, 함수, 필드명처럼 코드 식별자는 원래 영문 명칭을 유지한다.
-- 새 실습을 추가하면 `DEEPEVAL_CURRICULUM.md`의 해당 세션에서 파일을 찾을 수 있게 연결한다.
+- 새 실습을 추가하면 해당 `curriculum/week...md`의 세션에서 파일과 실행 명령을 찾을 수 있게 연결한다.
+- 주차별 문서를 추가하거나 이름을 바꾸면 `DEEPEVAL_CURRICULUM.md`, `curriculum/README.md`, `README.md`의 링크를 함께 갱신한다.
 - 실행 방식이나 프로젝트 구조가 달라지면 `README.md`도 함께 수정한다.
 - API 키, 토큰과 실제 사용자 데이터는 소스, 테스트 데이터와 로그에 기록하지 않는다.
 - `.env.local` 등 로컬 비밀 파일은 Git 추적 대상에 추가하지 않는다.
