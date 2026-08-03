@@ -142,19 +142,42 @@ reason이 예상과 다르면 threshold부터 바꾸지 않는다. 먼저 criter
 
 권장 보조 파일:
 
-```text
-tests/evals/week2_session3_geval_boundary_exercise.py
-```
+- [학생용 경계 사례 실습](../tests/evals/week2_session3_geval_boundary_exercise.py)
+- [참고 답안](../tests/evals/week2_session3_geval_boundary_solution.py)
+- [관찰 기록 템플릿](../evals/calibration/week2_geval_observations.md)
 
 CLI 전용 실습이므로 pytest 자동 수집이 필요하지 않다면 `test_` 접두사를 사용하지 않는다.
 
+학생용 파일에는 사람 라벨 공백 채우기, `GEval` 생성 함수 구현,
+score 판정 함수 구현, 관찰 후 rubric 수정의 네 TODO가 있다. 다음 순서로
+실행하면 LLM judge 호출과 API 없는 구조 검사를 분리할 수 있다.
+
+```bash
+# 1. TODO 1~3을 구현하고 API 없이 검사한다.
+.venv/bin/python tests/evals/week2_session3_geval_boundary_exercise.py --check
+
+# 2. metric.measure()로 경계 사례 하나를 디버깅한다. 이때부터 API를 호출한다.
+.venv/bin/python tests/evals/week2_session3_geval_boundary_exercise.py \
+  --debug-one boundary_missing_order_id
+
+# 3. evaluate()로 baseline 여섯 사례를 비교한다.
+.venv/bin/python tests/evals/week2_session3_geval_boundary_exercise.py --run-baseline
+
+# 4. 관찰 결과를 바탕으로 TODO 4의 rubric만 한 번 수정한다.
+.venv/bin/python tests/evals/week2_session3_geval_boundary_exercise.py --check-revision
+.venv/bin/python tests/evals/week2_session3_geval_boundary_exercise.py --run-revised
+```
+
+`--run-baseline`과 `--run-revised`가 출력하는 Markdown 행을 관찰 기록
+템플릿에 옮긴다. 참고 답안은 baseline과 수정 실행을 모두 끝낸 뒤 확인한다.
+
 ### 1. 사람 라벨을 먼저 작성
 
-- [ ] 명백한 pass 2개와 fail 2개를 준비한다.
-- [ ] 주문 번호가 빠진 답변처럼 경계 사례 1개를 만든다.
-- [ ] 요청 채널이 모호한 답변처럼 다른 경계 사례 1개를 만든다.
-- [ ] judge 실행 전에 `human_expected`와 한 줄 근거를 기록한다.
-- [ ] `clear_pass_001`, `boundary_missing_order_id`처럼 안정적인 ID를 붙인다.
+- [x] 명백한 pass 2개와 fail 2개를 준비한다.
+- [x] 주문 번호가 빠진 답변처럼 경계 사례 1개를 만든다.
+- [x] 요청 채널이 모호한 답변처럼 다른 경계 사례 1개를 만든다.
+- [x] judge 실행 전에 `human_expected`와 한 줄 근거를 기록한다.
+- [x] `clear_pass_001`, `boundary_missing_order_id`처럼 안정적인 ID를 붙인다.
 
 
 
