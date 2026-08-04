@@ -17,6 +17,8 @@
 | 4. reference와 실패 진단 | 예정  | 2/5 | reference 원칙과 진단표  |
 
 
+
+
 ## 세션 1: 표준 metric 선택 — 완료
 
 실습 파일:
@@ -188,17 +190,17 @@ score 판정 함수 구현, 관찰 후 rubric 수정의 네 TODO가 있다. 다�
 3. reason이 rubric의 같은 항목을 일관되게 보는지 확인한다.
 4. 불일치를 rubric, reference, 사람 라벨, judge 변동 중 하나로 분류한다.
 
-- [ ] 가장 명확한 문제 하나만 골라 rubric을 한 번 수정한다.
-- [ ] 같은 사례를 재실행해 변경 전후를 기록한다.
-- [ ] 애매한 사례는 5주차 calibration 후보로 남긴다.
+- [x] 가장 명확한 문제 하나만 골라 rubric을 한 번 수정한다.
+- [x] 같은 사례를 재실행해 변경 전후를 기록한다.
+- [x] 애매한 사례는 5주차 calibration 후보로 남긴다.
 
 
 
 ### 완료 조건
 
-- [ ] 여섯 사례에 사람 예상, score, reason이 기록되어 있다.
-- [ ] rubric 수정 이유와 효과를 설명할 수 있다.
-- [ ] 현재 threshold가 아직 임시 값임을 명시했다.
+- [x] 여섯 사례에 사람 예상, score, reason이 기록되어 있다.
+- [x] rubric 수정 이유와 효과를 설명할 수 있다.
+- [x] 현재 threshold가 아직 임시 값임을 명시했다.
 
 
 
@@ -207,6 +209,39 @@ score 판정 함수 구현, 관찰 후 rubric 수정의 네 TODO가 있다. 다�
 > - 예상 시간: 60~90분
 > - 선행 조건: 세션 1~3 완료
 > - 핵심 산출물: reference 운영 원칙과 결함 진단표
+
+권장 실습 파일:
+
+- [학생용 reference/진단 실습](../tests/evals/week2_session4_reference_diagnosis_exercise.py)
+- [참고 답안](../tests/evals/week2_session4_reference_diagnosis_solution.py)
+- [reference 운영 원칙과 진단 기록 템플릿](../evals/calibration/week2_reference_diagnosis.md)
+
+학생용 파일에는 field 역할 분류, 상황별 reference 전략 선택, metric별
+진단 경로 작성, reviewed Golden 승격 함수의 네 TODO가 있다. 이번 세션의
+핵심은 새 score를 얻는 것이 아니라 이미 배운 metric의 책임 범위와 운영
+경계를 명확히 하는 것이므로 모든 명령은 LLM judge와 외부 API를 호출하지
+않는다.
+
+```bash
+# 1. TODO 1~4를 구현하고 API 없이 검사한다.
+.venv/bin/python \
+  tests/evals/week2_session4_reference_diagnosis_exercise.py --check
+
+# 2. 완성한 metric별 진단표를 출력해 기록 템플릿에 옮긴다.
+.venv/bin/python \
+  tests/evals/week2_session4_reference_diagnosis_exercise.py \
+  --show-diagnosis
+
+# 3. reference 없는 production 실패가 사람 검토 후 Golden이 되는 흐름을 확인한다.
+.venv/bin/python \
+  tests/evals/week2_session4_reference_diagnosis_exercise.py \
+  --simulate-feedback-loop
+```
+
+참고 답안은 네 TODO와 기록 템플릿을 먼저 완성한 뒤 비교한다. production
+표본의 `actual_output`을 그대로 정답으로 복사하지 않고, 사람이 승인한
+`reviewed_expected_output`만 다음 regression dataset의 정적 reference로
+승격하는 경계를 확인한다.
 
 
 
@@ -238,6 +273,13 @@ score 판정 함수 구현, 관찰 후 rubric 수정의 네 TODO가 있다. 다�
 - [ ] 각 metric이 놓칠 수 있는 결함을 한 개씩 적는다.
 - [ ] 실패 결과에 `suspected_component`를 기록할 방식을 정한다.
 - [ ] Agent trace 결함은 아직 포함하지 않고 선택 심화로 미룬다.
+
+### 완료 조건
+
+- [ ] field를 `request`, `reviewed_reference`, `runtime_observation`으로 구분할 수 있다.
+- [ ] 개발 회귀와 reference 없는 production 표본의 평가 전략을 구분했다.
+- [ ] 네 metric의 낮은 score를 첫 수정 대상과 blind spot에 연결했다.
+- [ ] 사람이 승인한 production 실패만 reviewed Golden으로 환류했다.
 
 
 
