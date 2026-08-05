@@ -75,6 +75,35 @@ app/refund_support.py
 tests/evals/test_week3_session1_refund_app_contract.py
 ```
 
+### 실습 진행 순서
+
+학생용 `app/refund_support.py`에는 정책 데이터와 함수 signature가 준비되어 있고,
+retriever, generator, callback에 TODO가 하나씩 남아 있다. 처음부터 자연어 처리나
+RAG 프레임워크를 추가하지 말고 아래 red-green 순서로 한 함수씩 완성한다.
+
+1. 계약 테스트를 실행해 세 함수가 아직 구현되지 않아 실패하는 것을 확인한다.
+2. `retrieve_policy()`를 구현하고 retriever 테스트만 통과시킨다.
+3. `generate_answer()`를 구현하고 generator 테스트만 통과시킨다.
+4. `answer_refund_question()`으로 두 함수를 연결한다.
+5. 전체 계약 테스트를 실행해 모름 응답과 빈 입력까지 확인한다.
+
+```bash
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session1_refund_app_contract.py::test_retriever_returns_relevant_policy_documents -v
+
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session1_refund_app_contract.py::test_generator_uses_supplied_documents -v
+
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session1_refund_app_contract.py -v
+```
+
+| 함수 | 입력 | 실행 중 만들어지는 값 | 평가에서의 역할 |
+| --- | --- | --- | --- |
+| `retrieve_policy()` | 사용자 질문 | 관련 정책 `list[str]` | `retrieval_context` |
+| `generate_answer()` | 질문, 검색 문서 | 답변 `str` | `actual_output` |
+| `answer_refund_question()` | 사용자 질문 | 답변과 검색 문서 tuple | Golden을 현재 앱에 연결하는 callback |
+
 ### 왜 최소 앱이 먼저 필요한가
 
 Golden은 실행 전 입력과 기대 결과를 담고, 앱이 실행된 뒤에야 `actual_output`과 `retrieval_context`가 생긴다. 앱 callback이 없으면 dataset을 만들어도 runtime test case로 변환하는 과정을 배울 수 없다.
