@@ -346,6 +346,37 @@ reviewer가 원 정책 또는 source of truth와 대조해 검색 문구가 올�
 {"input":"지난주 구매를 환불하려면 어떻게 하나요?","expected_output":"구매 후 30일 이내 주문 번호와 함께 고객센터에 요청합니다.","context":["구매 후 30일 이내에는 주문 번호와 함께 고객센터에 요청하면 전액 환불할 수 있다."],"additional_metadata":{"case_id":"refund-known-bug-001","category":"known_bug","protected_risk":"unsupported_refund_window","suspected_component":"generator_grounding","suite":"smoke","review_status":"approved","bug_status":"fixed","source_sample_id":"prod_refund_001"}}
 ```
 
+### 실습 진행 순서
+
+세션 2에서 승인한 10개 Golden이 `refund_goldens.jsonl`에 준비되어 있다. 먼저
+각 행의 네 최상위 field가 정적 reference인지 설명한 뒤, 아래 순서로 테스트를
+읽고 실행한다.
+
+```bash
+# 1. JSONL의 한 행과 파일 경로 계약을 확인한다.
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session3_local_dataset.py::test_jsonl_has_one_golden_per_line -v
+
+# 2. reference와 metadata 검증만 좁게 실행한다.
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session3_local_dataset.py \
+  -k "reference or metadata or runtime or sensitive" -v
+
+# 3. DeepEval loader와 single-turn 제약을 포함해 전체를 실행한다.
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session3_local_dataset.py -v
+```
+
+`iter_jsonl()`은 원본 key가 저장되어 있는지를 검사하기 위한 얇은 loader이고,
+`make_dataset()`은 JSON object를 `Golden` 목록으로 명시적으로 변환한다.
+`load_dataset()`은 DeepEval의 `add_goldens_from_jsonl_file()`로 같은 파일을 다시
+읽는다. 두 경로에서 `case_id` 순서가 같아야 저장 형식과 in-memory dataset의
+배선이 맞다.
+
+`refund-invalid-001`의 공백 `input`은 누락 오류가 아니라 빈 입력 동작을 보호하는
+의도적 Golden이다. 따라서 `input` key와 문자열 타입은 필수지만, 모든 입력에
+`strip()` 후 비어 있지 않다는 조건을 일괄 적용하지 않는다.
+
 
 
 ### 왜 JSONL과 dataset이 필요한가
@@ -363,11 +394,11 @@ runtime field 혼입, 미검토 상태와 개인정보처럼 **평가 자체를 
 
 ### 구현 작업
 
-- [ ] `Golden` 목록으로 `EvaluationDataset`을 만든다.
-- [ ] JSONL 한 줄이 Golden 하나가 되게 저장한다.
-- [ ] 프로젝트 루트 기준으로 파일 경로를 안정적으로 해석한다.
-- [ ] 다시 로드한 개수와 `case_id`를 검사한다.
-- [ ] single-turn과 conversational Golden을 섞지 않는 제약을 확인한다.
+- [x] `Golden` 목록으로 `EvaluationDataset`을 만든다.
+- [x] JSONL 한 줄이 Golden 하나가 되게 저장한다.
+- [x] 프로젝트 루트 기준으로 파일 경로를 안정적으로 해석한다.
+- [x] 다시 로드한 개수와 `case_id`를 검사한다.
+- [x] single-turn과 conversational Golden을 섞지 않는 제약을 확인한다.
 
 필수 과정에서는 single-turn Golden만 사용한다. multi-turn dataset은 선택
 심화로 미루며, 이 제약은 아직 배우지 않은 대화 평가를 섞지 않기 위한 범위
@@ -375,18 +406,18 @@ runtime field 혼입, 미검토 상태와 개인정보처럼 **평가 자체를 
 
 ### API 없는 데이터 검증
 
-- [ ] 중복 `case_id`가 없다.
-- [ ] `input`, reference, 위험 metadata가 비어 있지 않다.
-- [ ] runtime field가 저장되어 있지 않다.
-- [ ] 실제 개인정보나 key 형태의 값이 없다.
+- [x] 중복 `case_id`가 없다.
+- [x] `input`, reference, 위험 metadata가 비어 있지 않다.
+- [x] runtime field가 저장되어 있지 않다.
+- [x] 실제 개인정보나 key 형태의 값이 없다.
 
 
 
 ### 완료 조건
 
-- [ ] 코드 변경 없이 JSONL 행을 추가할 수 있다.
-- [ ] 로컬 파일에서 동일 dataset을 재구성할 수 있다.
-- [ ] 데이터 검증 테스트가 judge 없이 통과한다.
+- [x] 코드 변경 없이 JSONL 행을 추가할 수 있다.
+- [x] 로컬 파일에서 동일 dataset을 재구성할 수 있다.
+- [x] 데이터 검증 테스트가 judge 없이 통과한다.
 
 
 
