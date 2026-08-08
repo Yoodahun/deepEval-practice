@@ -33,21 +33,25 @@ case_id가 표시된 regression 결과
 이 흐름에서 학습할 핵심은 파일 형식 자체가 아니라 다음 세 가지다.
 
 1. **기준과 관측값을 분리한다.** Golden은 실행 전 승인된 기준이고,
-   `actual_output`은 실행할 때마다 앱에서 얻는 결과다.
+  `actual_output`은 실행할 때마다 앱에서 얻는 결과다.
 2. **데이터와 테스트 로직을 분리한다.** 사례를 추가할 때 Python 테스트를
-   복사하지 않고 JSONL 한 행을 추가한다.
+  복사하지 않고 JSONL 한 행을 추가한다.
 3. **실패를 추적 가능하게 만든다.** 숫자 인덱스가 아니라 `case_id`와 위험
-   metadata로 어떤 사용자 위험이 깨졌는지 찾는다.
+  metadata로 어떤 사용자 위험이 깨졌는지 찾는다.
+
+
 
 ### 핵심 용어
 
-| 용어 | 이 과정에서의 의미 | 아닌 것 |
-| --- | --- | --- |
-| `Golden` | 사람이 검토한 입력, 기대 결과, 정답 근거와 metadata | 현재 모델이 생성한 답변 모음 |
-| `EvaluationDataset` | 여러 Golden을 로드·저장·순회하는 컨테이너 | 자동으로 좋은 데이터를 만들어 주는 도구 |
-| JSONL | Golden 하나를 한 줄에 저장하는 버전 관리용 형식 | 평가 로직 자체 |
-| `LLMTestCase` | 정적 reference와 현재 앱의 runtime observation을 결합한 평가 단위 | Golden과 동일한 객체 역할 |
-| regression test | 이미 보호하기로 한 동작이 변경 후에도 유지되는지 같은 사례로 재실행하는 테스트 | 한 번만 실행하는 데모 |
+
+| 용어                  | 이 과정에서의 의미                                         | 아닌 것                   |
+| ------------------- | -------------------------------------------------- | ---------------------- |
+| `Golden`            | 사람이 검토한 입력, 기대 결과, 정답 근거와 metadata                 | 현재 모델이 생성한 답변 모음       |
+| `EvaluationDataset` | 여러 Golden을 로드·저장·순회하는 컨테이너                         | 자동으로 좋은 데이터를 만들어 주는 도구 |
+| JSONL               | Golden 하나를 한 줄에 저장하는 버전 관리용 형식                     | 평가 로직 자체               |
+| `LLMTestCase`       | 정적 reference와 현재 앱의 runtime observation을 결합한 평가 단위 | Golden과 동일한 객체 역할      |
+| regression test     | 이미 보호하기로 한 동작이 변경 후에도 유지되는지 같은 사례로 재실행하는 테스트       | 한 번만 실행하는 데모           |
+
 
 `context`는 사람이 승인한 이상적 근거이고 `retrieval_context`는 retriever가
 실행 중 실제로 반환한 문서다. DeepEval 타입이 runtime field 저장을 허용하더라도
@@ -56,12 +60,16 @@ case_id가 표시된 regression 결과
 
 ## 주차 학습 지도
 
-| 세션 | 난이도 | 핵심 산출물 |
-| --- | ---: | --- |
-| 1. 최소 고객지원 앱 | 3/5 | runtime output callback |
-| 2. Golden 설계 | 3/5 | 20개 reviewed Golden |
-| 3. 로컬 dataset | 2/5 | JSONL과 데이터 검증 |
+
+| 세션                   | 난이도 | 핵심 산출물                        |
+| -------------------- | --- | ----------------------------- |
+| 1. 최소 고객지원 앱         | 3/5 | runtime output callback       |
+| 2. Golden 설계         | 3/5 | 20개 reviewed Golden           |
+| 3. 로컬 dataset        | 2/5 | JSONL과 데이터 검증                 |
 | 4. pytest regression | 3/5 | smoke/full parameterized test |
+
+
+
 
 ## 세션 1: 평가 가능한 최소 고객지원 앱
 
@@ -74,6 +82,8 @@ case_id가 표시된 regression 결과
 app/refund_support.py
 tests/evals/test_week3_session1_refund_app_contract.py
 ```
+
+
 
 ### 실습 진행 순서
 
@@ -98,11 +108,15 @@ RAG 프레임워크를 추가하지 말고 아래 red-green 순서로 한 함수
   tests/evals/test_week3_session1_refund_app_contract.py -v
 ```
 
-| 함수 | 입력 | 실행 중 만들어지는 값 | 평가에서의 역할 |
-| --- | --- | --- | --- |
-| `retrieve_policy()` | 사용자 질문 | 관련 정책 `list[str]` | `retrieval_context` |
-| `generate_answer()` | 질문, 검색 문서 | 답변 `str` | `actual_output` |
-| `answer_refund_question()` | 사용자 질문 | 답변과 검색 문서 tuple | Golden을 현재 앱에 연결하는 callback |
+
+| 함수                         | 입력        | 실행 중 만들어지는 값      | 평가에서의 역할                    |
+| -------------------------- | --------- | ----------------- | --------------------------- |
+| `retrieve_policy()`        | 사용자 질문    | 관련 정책 `list[str]` | `retrieval_context`         |
+| `generate_answer()`        | 질문, 검색 문서 | 답변 `str`          | `actual_output`             |
+| `answer_refund_question()` | 사용자 질문    | 답변과 검색 문서 tuple   | Golden을 현재 앱에 연결하는 callback |
+
+
+
 
 ### 왜 최소 앱이 먼저 필요한가
 
@@ -145,31 +159,69 @@ def answer_refund_question(question: str) -> tuple[str, list[str]]:
     ...
 ```
 
+
+
 ### 구현 범위
 
-- [ ] 환불 기간, 요청 방법, 필요 정보가 담긴 정책 문서 3~5개를 준비한다.
-- [ ] `retrieve_policy()`가 질문에 맞는 문서 목록을 반환한다.
-- [ ] `generate_answer()`가 답변 문자열을 반환한다.
-- [ ] 상위 callback이 `(actual_output, retrieval_context)`를 반환한다.
-- [ ] 정책에 답이 없을 때 예외 대신 명시적인 모름 응답을 반환한다.
+- [x] 환불 기간, 요청 방법, 필요 정보가 담긴 정책 문서 3~5개를 준비한다.
+- [x] `retrieve_policy()`가 질문에 맞는 문서 목록을 반환한다.
+- [x] `generate_answer()`가 답변 문자열을 반환한다.
+- [x] 상위 callback이 `(actual_output, retrieval_context)`를 반환한다.
+- [x] 정책에 답이 없을 때 예외 대신 명시적인 모름 응답을 반환한다.
+
+
 
 ### API 없는 계약 테스트
 
-- [ ] 반환 타입과 빈 값 여부를 검사한다.
-- [ ] retrieval 결과가 `list[str]`인지 검사한다.
-- [ ] 입력이 비어 있을 때 정의된 동작을 확인한다.
-- [ ] 이 세션에서는 judge를 호출하지 않는다.
+- [x] 반환 타입과 빈 값 여부를 검사한다.
+- [x] retrieval 결과가 `list[str]`인지 검사한다.
+- [x] 입력이 비어 있을 때 정의된 동작을 확인한다.
+- [x] 이 세션에서는 judge를 호출하지 않는다.
+
+
 
 ### 완료 조건
 
-- [ ] 테스트가 하드코딩된 `actual_output` 대신 앱을 호출한다.
-- [ ] retriever와 generator를 독립적으로 호출할 수 있다.
-- [ ] deterministic 계약 테스트가 통과한다.
+- [x] 테스트가 하드코딩된 `actual_output` 대신 앱을 호출한다.
+- [x] retriever와 generator를 독립적으로 호출할 수 있다.
+- [x] deterministic 계약 테스트가 통과한다.
+
+
 
 ## 세션 2: Golden을 5개에서 20개로 확장
 
 > - 예상 시간: 60~90분 + 이후 세션에서 보완
 > - 선행 조건: 세션 1 완료
+
+권장 파일:
+
+```text
+tests/evals/week3_session2_golden_design_exercise.py
+tests/evals/week3_session2_golden_design_solution.py
+```
+
+처음에는 JSONL이나 `EvaluationDataset`부터 만들지 않는다. 학생용 파일에 준비된
+reference 후보를 읽고, 승인 상태와 보호할 위험을 판단해 metadata를 붙이는
+것부터 시작한다. 아래 순서대로 실행하면 5개 smoke, 10개 reviewed Golden,
+20개 coverage 목표를 단계적으로 완성할 수 있다.
+
+```bash
+# 1. 승인·미검토·거절 후보를 읽는다.
+.venv/bin/python \
+  tests/evals/week3_session2_golden_design_exercise.py --show-queue
+
+# 2. TODO 1~4를 순서대로 작성한 뒤 API 없는 검사를 실행한다.
+.venv/bin/python \
+  tests/evals/week3_session2_golden_design_exercise.py --check
+
+# 3. 현재 10개에서 category별로 몇 개를 더 추가할지 확인한다.
+.venv/bin/python \
+  tests/evals/week3_session2_golden_design_exercise.py --show-coverage
+
+# 4. 직접 완성한 뒤에만 참고 답안과 비교한다.
+.venv/bin/python \
+  tests/evals/week3_session2_golden_design_solution.py --check
+```
 
 한 번에 20개를 채우지 않는다. 먼저 중요한 5개를 리뷰하고 10개로 확장한 뒤, 주차가 끝날 때 20개를 완성한다.
 
@@ -190,31 +242,39 @@ production 품질을 보장하는 통계적 기준이 아니라 **coverage 설�
 위험과 metadata를 함께 확인하고 승인했다는 뜻이다. 2주차의
 `prod_refund_001`은 `unsupported_refund_window`를 보호하는 첫 known-bug
 Golden으로 재사용한다. 상태값은 2주차 계약과 맞춰 `unreviewed`, `approved`,
-`rejected`를 사용하며 **Golden에는 `approved`만 포함한다.**
+`rejected`를 사용하며 **Golden에는** `approved`**만 포함한다.**
 
 ### 1단계: smoke 후보 5개
 
-- [ ] 가장 흔한 환불 질문 2개
-- [ ] 환불 기간 경계 질문 1개
-- [ ] 정책에 답이 없는 질문 1개
-- [ ] 개인정보를 불필요하게 요구하면 안 되는 질문 1개
+- [x] 가장 흔한 환불 질문 2개
+- [x] 환불 기간 경계 질문 1개
+- [x] 정책에 답이 없는 질문 1개
+- [x] 개인정보를 불필요하게 요구하면 안 되는 질문 1개
+
+
 
 ### 2단계: 10개로 확장
 
-- [ ] 표현만 다른 동등 질문
-- [ ] 정보가 부족한 질문
-- [ ] 두 요구가 섞인 복합 질문
-- [ ] 2주차의 off-topic과 unsupported claim 위험
+- [x] 표현만 다른 동등 질문
+- [x] 정보가 부족한 질문
+- [x] 두 요구가 섞인 복합 질문
+- [x] 2주차의 off-topic과 unsupported claim 위험
+
+
 
 ### 3단계: 20개 coverage
 
-| category | 목표 | 예시 |
-| --- | ---: | --- |
-| normal | 6 | 기간, 요청 채널, 필요 정보 |
-| boundary | 4 | 구매 날짜 누락, 복합 질문 |
-| known_bug | 4 | 90일 오안내, 배송 설명으로 이탈 |
-| safety_policy | 3 | 카드번호 요구, 본인 확인 범위 |
-| unknown_or_invalid_input | 3 | 정책에 없는 질문, 빈 입력, 긴 입력 |
+
+| category                 | 목표  | 예시                    |
+| ------------------------ | --- | --------------------- |
+| normal                   | 6   | 기간, 요청 채널, 필요 정보      |
+| boundary                 | 4   | 구매 날짜 누락, 복합 질문       |
+| known_bug                | 4   | 90일 오안내, 배송 설명으로 이탈   |
+| safety_policy            | 3   | 카드번호 요구, 본인 확인 범위     |
+| unknown_or_invalid_input | 3   | 정책에 없는 질문, 빈 입력, 긴 입력 |
+
+
+
 
 ### metadata 규칙
 
@@ -230,22 +290,24 @@ Golden으로 재사용한다. 상태값은 2주차 계약과 맞춰 `unreviewed`
 }
 ```
 
-- [ ] `case_id`가 중복되지 않는다.
-- [ ] 각 Golden이 보호하는 위험을 설명한다.
-- [ ] `actual_output`, `retrieval_context`, `tools_called`를 Golden에 고정하지 않는다.
-- [ ] synthetic 초안은 reviewer 승인 전 `approved`로 표시하지 않는다.
+- [x] `case_id`가 중복되지 않는다.
+- [x] 각 Golden이 보호하는 위험을 설명한다.
+- [x] `actual_output`, `retrieval_context`, `tools_called`를 Golden에 고정하지 않는다.
+- [x] synthetic 초안은 reviewer 승인 전 `approved`로 표시하지 않는다.
 
 metadata는 장식이 아니라 실패 후 조사 경로를 보존한다.
 
-| metadata | 사용하는 이유 |
-| --- | --- |
-| `case_id` | pytest 리포트와 원본 Golden을 연결한다. |
-| `category` | 정상·경계·과거 결함 등 coverage 편중을 찾는다. |
-| `protected_risk` | 이 사례를 계속 유지해야 하는 사용자 위험을 설명한다. |
-| `suspected_component` | 실패 시 첫 조사 대상을 기록한다. 확정 원인은 아니다. |
-| `suite` 또는 tags | smoke 등 실행 시점을 선택한다. |
-| `review_status` | reference 승인 상태를 나타낸다. Golden에는 `approved`만 허용한다. |
-| `bug_status` | 과거 결함이 아직 `active`인지 수정되어 `fixed`인지 구분한다. |
+
+| metadata              | 사용하는 이유                                           |
+| --------------------- | ------------------------------------------------- |
+| `case_id`             | pytest 리포트와 원본 Golden을 연결한다.                      |
+| `category`            | 정상·경계·과거 결함 등 coverage 편중을 찾는다.                   |
+| `protected_risk`      | 이 사례를 계속 유지해야 하는 사용자 위험을 설명한다.                    |
+| `suspected_component` | 실패 시 첫 조사 대상을 기록한다. 확정 원인은 아니다.                   |
+| `suite` 또는 tags       | smoke 등 실행 시점을 선택한다.                              |
+| `review_status`       | reference 승인 상태를 나타낸다. Golden에는 `approved`만 허용한다. |
+| `bug_status`          | 과거 결함이 아직 `active`인지 수정되어 `fixed`인지 구분한다.         |
+
 
 `known_bug`는 과거 결함을 나타내는 category이고 `suite`는 실행 시점을 나타낸다.
 아직 수정되지 않은 `bug_status=active` 사례와 이미 수정되어 재발을 막는
@@ -256,8 +318,10 @@ metadata는 장식이 아니라 실패 후 조사 경로를 보존한다.
 
 ### 완료 조건
 
-- [ ] 세션 종료 시 최소 10개, 주차 종료 시 20개가 있다.
-- [ ] 모든 Golden에 안정적인 ID와 위험 metadata가 있다.
+- [x] 세션 종료 시 최소 10개, 주차 종료 시 20개가 있다.
+- [x] 모든 Golden에 안정적인 ID와 위험 metadata가 있다.
+
+
 
 ## 세션 3: `EvaluationDataset`과 JSONL
 
@@ -281,6 +345,8 @@ reviewer가 원 정책 또는 source of truth와 대조해 검색 문구가 올�
 ```json
 {"input":"지난주 구매를 환불하려면 어떻게 하나요?","expected_output":"구매 후 30일 이내 주문 번호와 함께 고객센터에 요청합니다.","context":["구매 후 30일 이내에는 주문 번호와 함께 고객센터에 요청하면 전액 환불할 수 있다."],"additional_metadata":{"case_id":"refund-known-bug-001","category":"known_bug","protected_risk":"unsupported_refund_window","suspected_component":"generator_grounding","suite":"smoke","review_status":"approved","bug_status":"fixed","source_sample_id":"prod_refund_001"}}
 ```
+
+
 
 ### 왜 JSONL과 dataset이 필요한가
 
@@ -314,11 +380,15 @@ runtime field 혼입, 미검토 상태와 개인정보처럼 **평가 자체를 
 - [ ] runtime field가 저장되어 있지 않다.
 - [ ] 실제 개인정보나 key 형태의 값이 없다.
 
+
+
 ### 완료 조건
 
 - [ ] 코드 변경 없이 JSONL 행을 추가할 수 있다.
 - [ ] 로컬 파일에서 동일 dataset을 재구성할 수 있다.
 - [ ] 데이터 검증 테스트가 judge 없이 통과한다.
+
+
 
 ## 세션 4: pytest parameterization과 데이터 리뷰
 
@@ -330,6 +400,8 @@ runtime field 혼입, 미검토 상태와 개인정보처럼 **평가 자체를 
 ```text
 tests/evals/test_week3_session4_dataset_regression.py
 ```
+
+
 
 ### Golden에서 runtime test case로
 
@@ -377,6 +449,8 @@ metadata 문자열이 자동으로 pytest marker가 되지는 않는다. loader�
 .venv/bin/python -m pytest tests/evals/test_week3_session4_dataset_regression.py --collect-only -q
 ```
 
+
+
 ### 최종 데이터 리뷰
 
 - [ ] 모순되는 reference를 제거했다.
@@ -384,6 +458,8 @@ metadata 문자열이 자동으로 pytest marker가 되지는 않는다. loader�
 - [ ] 지나치게 쉬운 사례만 모여 있지 않다.
 - [ ] production data를 사용했다면 익명화했다.
 - [ ] runtime output이 Golden에 남아 있지 않다.
+
+
 
 ## 3주차 완료 조건
 
@@ -394,6 +470,8 @@ metadata 문자열이 자동으로 pytest marker가 되지는 않는다. loader�
 - [ ] Golden reference와 앱 runtime observation을 예시 field로 설명할 수 있다.
 - [ ] JSONL 한 행을 추가했을 때 테스트 로직 변경 없이 수집 사례가 늘어난다.
 - [ ] 데이터 오류와 앱 runtime 실패를 서로 다른 실패로 분류할 수 있다.
+
+
 
 ## 막히기 쉬운 지점
 
