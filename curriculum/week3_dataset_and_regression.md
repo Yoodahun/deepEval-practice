@@ -346,6 +346,8 @@ reviewer가 원 정책 또는 source of truth와 대조해 검색 문구가 올�
 {"input":"지난주 구매를 환불하려면 어떻게 하나요?","expected_output":"구매 후 30일 이내 주문 번호와 함께 고객센터에 요청합니다.","context":["구매 후 30일 이내에는 주문 번호와 함께 고객센터에 요청하면 전액 환불할 수 있다."],"additional_metadata":{"case_id":"refund-known-bug-001","category":"known_bug","protected_risk":"unsupported_refund_window","suspected_component":"generator_grounding","suite":"smoke","review_status":"approved","bug_status":"fixed","source_sample_id":"prod_refund_001"}}
 ```
 
+
+
 ### 실습 진행 순서
 
 세션 2에서 승인한 10개 Golden이 `refund_goldens.jsonl`에 준비되어 있다. 먼저
@@ -376,8 +378,6 @@ reviewer가 원 정책 또는 source of truth와 대조해 검색 문구가 올�
 `refund-invalid-001`의 공백 `input`은 누락 오류가 아니라 빈 입력 동작을 보호하는
 의도적 Golden이다. 따라서 `input` key와 문자열 타입은 필수지만, 모든 입력에
 `strip()` 후 비어 있지 않다는 조건을 일괄 적용하지 않는다.
-
-
 
 ### 왜 JSONL과 dataset이 필요한가
 
@@ -430,6 +430,47 @@ runtime field 혼입, 미검토 상태와 개인정보처럼 **평가 자체를 
 
 ```text
 tests/evals/test_week3_session4_dataset_regression.py
+tests/evals/week3_session4_dataset_regression_solution.py
+```
+
+학생용 테스트에는 아래 5개 TODO가 있다. TODO 1~3은 pytest 수집 리포트의
+추적성과 subset 선택을 만들고, TODO 4~5는 Golden을 현재 앱 실행 결과와 결합해
+API 없는 회귀 계약을 만든다.
+
+
+| TODO | 구현 대상                         | 완료 후 확인할 것                      |
+| ---- | ----------------------------- | ------------------------------- |
+| 1    | metadata에서 `case_id` 추출       | 숫자 대신 `refund-...` ID가 보인다.     |
+| 2    | metadata를 pytest marker로 변환   | smoke/full/known_bug가 선택된다.     |
+| 3    | `pytest.param`에 ID와 marker 연결 | subset별 예상 개수가 수집된다.            |
+| 4    | callback 결과로 `LLMTestCase` 생성 | reference와 runtime field가 구분된다. |
+| 5    | deterministic runtime 계약 작성   | judge 없이 10개 사례를 먼저 검사한다.       |
+
+
+TODO를 한꺼번에 작성하지 말고 수집 배선과 runtime 배선을 나누어 확인한다.
+
+```bash
+# 시작 상태를 관찰한다. TODO가 남아 있으므로 golden0 같은 자동 ID가 보인다.
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session4_dataset_regression.py --collect-only -q
+
+# TODO 1~3을 작성한 뒤 ID와 marker 계약을 확인한다.
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session4_dataset_regression.py -m full --collect-only -q
+
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session4_dataset_regression.py -m smoke --collect-only -q
+
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session4_dataset_regression.py::test_active_known_bug_is_non_blocking_until_fixed -v
+
+# TODO 4~5를 작성한 뒤 전체 deterministic regression을 실행한다.
+.venv/bin/python -m pytest \
+  tests/evals/test_week3_session4_dataset_regression.py -v
+
+# 직접 완성한 다음에만 참고 답안을 실행한다.
+.venv/bin/python -m pytest \
+  tests/evals/week3_session4_dataset_regression_solution.py -v
 ```
 
 
@@ -460,11 +501,11 @@ test_case = LLMTestCase(
 데이터에 실행한다. 의미 기반 judge는 비용과 변동성이 있으므로 작은 smoke에서
 연결 상태를 확인하고, 본격적인 RAG 의미 진단은 4주차에서 수행한다.
 
-- [ ] `pytest.mark.parametrize`로 Golden을 순회한다.
-- [ ] `case_id`가 실패 리포트에 표시된다.
-- [ ] 모든 데이터에는 deterministic 검증을 먼저 실행한다.
-- [ ] smoke 5개에만 judge metric을 우선 연결한다.
-- [ ] `smoke`, `full`, `known_bug` 선택 규칙을 정의한다.
+- [x] `pytest.mark.parametrize`로 Golden을 순회한다.
+- [x] `case_id`가 실패 리포트에 표시된다.
+- [x] 모든 데이터에는 deterministic 검증을 먼저 실행한다.
+- [x] smoke 5개에만 judge metric을 우선 연결한다.
+- [x] `smoke`, `full`, `known_bug` 선택 규칙을 정의한다.
 
 - `smoke`: 핵심 위험 5개 정도를 빠르게 확인하는 부분집합
 - `full`: reviewed Golden 전체
@@ -478,29 +519,39 @@ metadata 문자열이 자동으로 pytest marker가 되지는 않는다. loader�
 
 ```bash
 .venv/bin/python -m pytest tests/evals/test_week3_session4_dataset_regression.py --collect-only -q
+
+# TODO 1~3 완료 후 예상 선택 개수
+.venv/bin/python -m pytest tests/evals/test_week3_session4_dataset_regression.py -m smoke --collect-only -q
+# smoke ID 5개가 수집된다.
+
+.venv/bin/python -m pytest tests/evals/test_week3_session4_dataset_regression.py -m known_bug --collect-only -q
+# known_bug ID 2개가 수집된다.
 ```
 
-
+`suite=smoke`는 실행 시점을 정하는 subset이고, `category=known_bug`는 사례의
+출처를 설명하는 분류다. 따라서 하나의 Golden이 두 marker를 동시에 가질 수
+있다. `bug_status=active`만 비차단 `xfail`로 두고, 이미 수정한 `fixed` 사례는
+일반 regression과 똑같이 실패를 차단한다.
 
 ### 최종 데이터 리뷰
 
-- [ ] 모순되는 reference를 제거했다.
+- [x] 모순되는 reference를 제거했다.
 - [ ] 보호 위험이 같은 중복 사례를 정리했다.
 - [ ] 지나치게 쉬운 사례만 모여 있지 않다.
-- [ ] production data를 사용했다면 익명화했다.
-- [ ] runtime output이 Golden에 남아 있지 않다.
+- [x] production data를 사용했다면 익명화했다.
+- [x] runtime output이 Golden에 남아 있지 않다.
 
 
 
 ## 3주차 완료 조건
 
 - [ ] 20개 이상의 reviewed Golden이 JSONL에 있다.
-- [ ] 앱 callback에서 runtime output을 생성한다.
-- [ ] smoke/full/known-bug를 선택 실행할 수 있다.
+- [x] 앱 callback에서 runtime output을 생성한다.
+- [x] smoke/full/known-bug를 선택 실행할 수 있다.
 - [ ] 실패한 ID에서 보호 위험과 의심 컴포넌트를 찾을 수 있다.
-- [ ] Golden reference와 앱 runtime observation을 예시 field로 설명할 수 있다.
-- [ ] JSONL 한 행을 추가했을 때 테스트 로직 변경 없이 수집 사례가 늘어난다.
-- [ ] 데이터 오류와 앱 runtime 실패를 서로 다른 실패로 분류할 수 있다.
+- [x] Golden reference와 앱 runtime observation을 예시 field로 설명할 수 있다.
+- [x] JSONL 한 행을 추가했을 때 테스트 로직 변경 없이 수집 사례가 늘어난다.
+- [x] 데이터 오류와 앱 runtime 실패를 서로 다른 실패로 분류할 수 있다.
 
 
 
