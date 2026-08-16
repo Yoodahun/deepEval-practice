@@ -85,6 +85,11 @@ week2_session1_metric_selection_solution.py  # 참고 답안
 
 - 테스트 함수는 `test_{평가대상}_{기대동작}` 형식으로 의도를 드러낸다.
 - `test_case1`, `test_example`처럼 실패 원인을 알 수 없는 이름은 피한다.
+- 모든 학습용 테스트 함수에는 한국어 docstring을 작성하고, 최소한 다음 두 내용을 명시적으로 구분해 기록한다.
+  - `확인 결과`: 이 테스트를 실행하고 통과하거나 실패했을 때 어떤 사실을 확인할 수 있는지 작성한다.
+  - `실행 목적`: 해당 사실을 왜 확인해야 하며, 어떤 품질 위험이나 학습 목표와 연결되는지 작성한다.
+- docstring은 테스트 구현을 그대로 읽어주는 설명이 아니라, 학습자가 결과의 의미와 테스트의 필요성을 이해할 수 있도록 작성한다.
+- parameterize된 테스트는 공통 docstring에 평가 목적을 기록하고, 각 사례는 안정적인 test ID로 어떤 조건을 확인하는지 드러낸다.
 - 메트릭 생성 함수는 `make_{품질축}_metric()` 형식을 사용한다.
 - 테스트 케이스 생성 함수는 `make_test_case()` 또는 `make_{시나리오}_case()` 형식을 사용한다.
 - 여러 시나리오를 parameterize할 때는 리포트에서 바로 식별할 수 있는 안정적인 test ID를 제공한다.
@@ -94,6 +99,10 @@ week2_session1_metric_selection_solution.py  # 참고 답안
 
 ```python
 def test_refund_answer_is_faithful() -> None:
+    """
+    확인 결과: 답변의 주장이 검색 근거에 의해 뒷받침되는지 확인한다.
+    실행 목적: 근거 없이 생성된 환불 정책이 사용자에게 전달되는 회귀를 방지한다.
+    """
     ...
 
 
@@ -106,6 +115,10 @@ def make_faithfulness_metric() -> FaithfulnessMetric:
 - 새 개념은 가능한 한 기존 고객지원 또는 환불 시나리오에 연결해 학습 부담을 줄인다.
 - 사용자가 직접 코딩하는 실습은 완성 코드 전체를 주기보다 2~4개의 명확한 `TODO`를 남긴다.
 - TODO는 메트릭 선택, required field 구성, rubric 작성처럼 해당 세션의 학습 목표와 직접 관련되어야 한다.
+- 학습 자료에서 사용하는 기능과 타입은 `DeepEval 공식 제공`, `학습용 커스텀`, `예제 애플리케이션 코드` 중 무엇인지 구분해서 설명한다.
+- DeepEval이 직접 제공하지 않는 학습용 `Enum`, `dataclass`, Pydantic model, helper class, fixture model, 상수와 매핑에는 선언부 바로 위나 같은 줄에 최소한 `# 학습용 커스텀: DeepEval 제공 기능 아님` 형태의 inline comment를 작성한다.
+- DeepEval 공식 클래스와 이름이 비슷한 커스텀 추상화를 만들지 않는다. 꼭 필요하면 이름에 교육용 또는 저장소 전용임이 드러나게 하고, 공식 API와의 차이를 주석이나 docstring으로 설명한다.
+- 한 실습에 커스텀 추상화가 여러 개 등장하면 파일 상단 docstring이나 해당 세션 문서에 공식 DeepEval 기능과 커스텀 학습 장치를 구분한 목록을 제공한다.
 - API를 호출하지 않는 구조 검사와 실제 LLM judge 실행을 가능하면 분리한다.
 - 참고 답안은 실습과 같은 디렉터리에 두되 `_solution.py` 접미사를 사용하고 pytest 수집 대상에서 제외한다.
 - 의도적인 pass/fail 사례와 실행 명령을 파일 상단 docstring에 기록한다.
