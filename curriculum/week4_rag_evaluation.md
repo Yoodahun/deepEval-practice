@@ -73,7 +73,7 @@ retriever가 잘못 가져온 문서도 runtime observation에는 그대로 들�
 따라서 Faithfulness가 높아도 그 문서 자체가 실제 정책과 맞는지는 별도
 reference와 사람 검토가 필요하다.
 
-## 세션 1: tracing 없는 end-to-end RAG 평가
+## 세션 1: tracing 없는 end-to-end RAG 평가 — 완료
 
 > - 예상 시간: 60~90분
 > - 선행 조건: 3주차 parameterized regression
@@ -149,12 +149,12 @@ DEEPEVAL_WEEK4_SESSION1_RUN_JUDGE=1 \
 
 ### 완료 조건
 
-- [ ] black-box 평가가 답할 수 있는 질문과 없는 질문을 구분한다.
-- [ ] 최종 답변 실패 한 개를 재현하고 사용자 영향을 기록한다.
+- [x] black-box 평가가 답할 수 있는 질문과 없는 질문을 구분한다.
+- [x] 최종 답변 실패 한 개를 재현하고 사용자 영향을 기록한다.
 
 
 
-## 세션 2: retriever 평가
+## 세션 2: retriever 평가 — 완료
 
 > - 예상 시간: 60~90분
 > - 선행 조건: `context`와 `retrieval_context` 구분
@@ -163,9 +163,43 @@ DEEPEVAL_WEEK4_SESSION1_RUN_JUDGE=1 \
 
 ```text
 tests/evals/test_week4_session2_rag_retriever.py
+tests/evals/week4_session2_rag_retriever_solution.py
 ```
 
+학생용 파일은 같은 질문과 기대 답변을 유지하고 `retrieval_context`만 바꾸는
+격리 실험이다. TODO 1~3을 순서대로 완성하며 metric을 실행하기 전에 예상 신호를
+먼저 기록하고, 낮은 점수를 서로 다른 retriever/reranker 진단 가설로 연결한다.
 
+
+| TODO | 구현 대상                                     | 완료 후 확인할 것                                  |
+| ---- | ----------------------------------------- | ------------------------------------------- |
+| 1    | clean/missing/noisy/poorly-ranked fixture | 누락, 잡음 양, 순서 효과가 분리된다.                      |
+| 2    | fixture별 primary signal 예측                | recall, relevancy, precision의 책임을 사례로 구분한다. |
+| 3    | contextual metric 생성자                     | 세 metric을 같은 threshold와 실행 조건으로 비교한다.       |
+
+
+먼저 외부 API 없이 fixture, field와 metric 설정을 확인한다.
+
+```bash
+.venv/bin/python -m pytest \
+  tests/evals/test_week4_session2_rag_retriever.py \
+  -k "not judge" -v
+```
+
+구조 검사를 통과한 뒤 clean/defective fixture 세 쌍을 총 6회 judge로 비교한다.
+
+```bash
+DEEPEVAL_WEEK4_SESSION2_RUN_JUDGE=1 \
+  .venv/bin/deepeval test run \
+  tests/evals/test_week4_session2_rag_retriever.py -v
+
+# 직접 완성한 뒤 참고 답안의 API 없는 구조만 비교
+.venv/bin/python -m \
+  tests.evals.week4_session2_rag_retriever_solution --check
+```
+
+judge 결과는 절대 점수보다 `clean > missing`, `clean > noisy`,
+`noisy > poorly-ranked`의 방향과 reason이 예상 결함을 읽었는지 먼저 확인한다.
 
 ### DeepEval 4.1.4 required field
 
@@ -189,8 +223,8 @@ tests/evals/test_week4_session2_rag_retriever.py
 | ------------- | ------------------------------ | ----------------------------- |
 | clean         | `[30일, 주문 번호, 고객센터]`           | 필요한 근거가 모두 있고 잡음이 적음          |
 | missing       | `[30일, 고객센터]`                  | 관련 문서만 있어도 주문 번호 근거는 누락될 수 있음 |
-| noisy         | `[배송, 30일, 회원등급, 주문 번호, 고객센터]` | 필요한 근거는 있지만 불필요한 결과가 많음       |
-| poorly-ranked | `[배송, 회원등급, 30일, 주문 번호, 고객센터]` | 근거의 존재와 앞쪽 순위는 다른 문제          |
+| noisy         | `[30일, 주문 번호, 고객센터, 배송, 회원등급]` | 필요한 근거는 앞에 있지만 잡음이 섞임         |
+| poorly-ranked | `[배송, 회원등급, 30일, 주문 번호, 고객센터]` | 같은 문서지만 잡음이 관련 근거보다 앞에 있음     |
 
 
 - **Recall**은 필요한 근거를 빠뜨리지 않았는지 묻는다.
@@ -199,31 +233,31 @@ tests/evals/test_week4_session2_rag_retriever.py
 
 점수의 정확한 숫자를 외우지 않는다. fixture를 실행하기 전에 어느 metric이
 어느 방향으로 움직일지 먼저 적고, 실제 reason이 그 결함을 읽었는지 비교한다.
-제품 위험이 근거 누락이면 recall, top-k 잡음과 비용이면 relevancy/precision처럼
-낮은 score가 서로 다른 수정 행동으로 이어지는 최소 1~2개만 suite에 남긴다.
+이 세션에서는 세 metric을 모두 실행해 책임 차이를 학습한다. 최종 suite에 무엇을
+남길지는 실제 사용자 위험, 관찰 결과와 비용을 함께 볼 수 있는 세션 4에서 정한다.
 
 ### 네 가지 retrieval fixture
 
-- [ ] 필요한 문서를 모두 포함한 clean retrieval
-- [ ] 핵심 정책 문서가 하나 빠진 missing retrieval
-- [ ] 관련 문서와 배송·회원등급 문서가 섞인 noisy retrieval
-- [ ] 핵심 문서가 뒤쪽에 위치한 poorly-ranked retrieval
+- [x] 필요한 문서를 모두 포함한 clean retrieval
+- [x] 핵심 정책 문서가 하나 빠진 missing retrieval
+- [x] 관련 문서와 배송·회원등급 문서가 섞인 noisy retrieval
+- [x] 핵심 문서가 뒤쪽에 위치한 poorly-ranked retrieval
 
 각 fixture에서는 retrieval만 바꾸고 입력과 expected output은 유지한다. 여러 컴포넌트를 동시에 바꾸면 metric의 진단 신호를 해석하기 어렵다.
 
-### metric 선택 실험
+### metric 비교 실험
 
-- [ ] recall이 missing retrieval에 반응하는지 확인한다.
-- [ ] relevancy가 noisy retrieval에 반응하는지 확인한다.
-- [ ] precision이 ranking 차이를 구분하는지 확인한다.
-- [ ] suite에 세 metric을 모두 넣지 않고 실제 위험을 보호하는 1~2개를 고른다.
+- [x] recall이 missing retrieval에 반응하는지 확인한다.
+- [x] relevancy가 noisy retrieval에 반응하는지 확인한다.
+- [x] precision이 ranking 차이를 구분하는지 확인한다.
+- [x] 낮은 recall, relevancy, precision을 각각 coverage, 잡음, reranking 조사 가설로 연결한다.
 
 
 
 ### 완료 조건
 
-- [ ] recall, relevancy, precision을 사례로 구분한다.
-- [ ] 낮은 contextual score를 retriever/reranker 진단 가설로 연결한다.
+- [x] recall, relevancy, precision을 사례로 구분한다.
+- [x] 낮은 contextual score를 retriever/reranker 진단 가설로 연결한다.
 
 
 

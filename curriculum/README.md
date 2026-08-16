@@ -10,9 +10,9 @@
 | --- | --- | --- |
 | [준비 단계](00_setup.md) | 완료 | 환경, API key, 첫 pass/fail eval |
 | [1주차](week1_evaluation_foundations.md) | 완료 | 평가 계약, `LLMTestCase`, 실행 방법, assertion 분리 |
-| [2주차](week2_metrics_and_geval.md) | 진행 중 | 표준 metric, custom `GEval`, reference 전략 |
-| [3주차](week3_dataset_and_regression.md) | 예정 | 최소 앱, Golden, dataset, pytest regression |
-| [4주차](week4_rag_evaluation.md) | 예정 | RAG end-to-end, retriever, generator 진단 |
+| [2주차](week2_metrics_and_geval.md) | 진행 중 | 세션 1~3 완료, reference 전략 예정 |
+| [3주차](week3_dataset_and_regression.md) | 진행 중 | 세션 1~3 완료, pytest regression 리뷰 진행 중 |
+| [4주차](week4_rag_evaluation.md) | 진행 중 | 세션 1~2 완료, generator와 suite 통합 예정 |
 | [5주차](week5_calibration_and_reliability.md) | 예정 | 사람 라벨, threshold, flaky, 비용과 오류 |
 | [6주차](week6_ci_and_capstone.md) | 예정 | smoke/full suite, CI, 변경 비교, 캡스톤 |
 | [선택 심화](optional_advanced_tracks.md) | 선택 | tracing, Agent, multi-turn, SDET 응용 |
