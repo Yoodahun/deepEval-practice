@@ -29,11 +29,13 @@ retriever ──→ retrieval_context
 reviewer가 준비한 기준: context, expected_output
 ```
 
-| 평가 범위 | 핵심 질문 | 주로 비교하는 값 | 이 단계의 한계 |
-| --- | --- | --- | --- |
-| end-to-end | 사용자가 받은 최종 결과가 유용한가? | `input`, `actual_output`, 필요시 `expected_output` | 실패 원인을 바로 확정하지 못함 |
-| retriever | 답변에 필요한 근거를 잘 찾았는가? | `input`/reference와 `retrieval_context` | generator가 근거를 어떻게 썼는지 모름 |
-| generator | 주어진 근거로 질문에 제대로 답했는가? | `input`, `retrieval_context`, `actual_output` | 검색 근거 자체가 정답인지는 별개 |
+
+| 평가 범위      | 핵심 질문                 | 주로 비교하는 값                                       | 이 단계의 한계                  |
+| ---------- | --------------------- | ----------------------------------------------- | ------------------------- |
+| end-to-end | 사용자가 받은 최종 결과가 유용한가?  | `input`, `actual_output`, 필요시 `expected_output` | 실패 원인을 바로 확정하지 못함         |
+| retriever  | 답변에 필요한 근거를 잘 찾았는가?   | `input`/reference와 `retrieval_context`          | generator가 근거를 어떻게 썼는지 모름 |
+| generator  | 주어진 근거로 질문에 제대로 답했는가? | `input`, `retrieval_context`, `actual_output`   | 검색 근거 자체가 정답인지는 별개        |
+
 
 end-to-end는 사용자에게 나타난 **증상**을 찾고 component metric은 **첫 조사
 대상**을 좁힌다. 반대로 component score만 보면 최종 사용자 피해를 놓칠 수
@@ -41,22 +43,28 @@ end-to-end는 사용자에게 나타난 **증상**을 찾고 component metric은
 
 ## 주차 학습 지도
 
-| 세션 | 난이도 | 평가 범위 | 핵심 산출물 |
-| --- | ---: | --- | --- |
+
+| 세션                | 난이도 | 평가 범위         | 핵심 산출물               |
+| ----------------- | --- | ------------- | -------------------- |
 | 1. RAG end-to-end | 2/5 | 사용자 관점의 최종 결과 | black-box smoke eval |
-| 2. retriever | 3/5 | 검색 품질 | 누락·잡음·순위 사례 |
-| 3. generator | 3/5 | 관련성·근거 충실성 | generator 결함 사례 |
-| 4. suite 통합 | 3/5 | 진단 흐름 | 10개 RAG 사례와 triage 표 |
+| 2. retriever      | 3/5 | 검색 품질         | 누락·잡음·순위 사례          |
+| 3. generator      | 3/5 | 관련성·근거 충실성    | generator 결함 사례      |
+| 4. suite 통합       | 3/5 | 진단 흐름         | 10개 RAG 사례와 triage 표 |
+
+
+
 
 ## 먼저 구분할 데이터
 
-| field | 의미 | 평가 관점 |
-| --- | --- | --- |
-| `input` | 사용자 질문 | 전체 |
-| `expected_output` | 이상적인 답변 reference | end-to-end, 일부 contextual metric |
-| `context` | 사람이 검토한 이상적 근거 | ground truth |
-| `retrieval_context` | retriever의 실제 반환 문서 | retriever/generator runtime |
-| `actual_output` | generator의 실제 답변 | end-to-end/generator runtime |
+
+| field               | 의미                  | 평가 관점                            |
+| ------------------- | ------------------- | -------------------------------- |
+| `input`             | 사용자 질문              | 전체                               |
+| `expected_output`   | 이상적인 답변 reference   | end-to-end, 일부 contextual metric |
+| `context`           | 사람이 검토한 이상적 근거      | ground truth                     |
+| `retrieval_context` | retriever의 실제 반환 문서 | retriever/generator runtime      |
+| `actual_output`     | generator의 실제 답변    | end-to-end/generator runtime     |
+
 
 `context`와 `retrieval_context`가 우연히 같은 내용이어도 역할은 다르다. 하나는 reviewer가 정한 정답 근거이고 다른 하나는 앱이 실제 관측한 검색 결과다.
 
@@ -74,7 +82,45 @@ reference와 사람 검토가 필요하다.
 
 ```text
 tests/evals/test_week4_session1_rag_end_to_end.py
+tests/evals/week4_session1_rag_end_to_end_solution.py
+evals/metrics/refund_completeness.py
 ```
+
+학생용 파일은 3주차에 만든 JSONL과 앱 callback을 그대로 사용한다. TODO 1~4를
+순서대로 완성하며 reference와 runtime field를 다시 구분하고, 두 end-to-end
+metric의 실패를 사용자 위험으로 기록한다.
+
+
+| TODO | 구현 대상                      | 완료 후 확인할 것                                      |
+| ---- | -------------------------- | ----------------------------------------------- |
+| 1    | metadata로 smoke Golden 선택  | reviewed smoke 5개만 남는다.                         |
+| 2    | 앱 실행 결과로 `LLMTestCase` 생성  | `context`와 `retrieval_context`가 섞이지 않는다.        |
+| 3    | `AnswerRelevancyMetric` 생성 | 질문 직접성이라는 한 품질 축을 평가한다.                         |
+| 4    | 실패 관찰 기록                   | score/reason과 사용자 영향은 연결하되 원인은 `unknown`으로 남긴다. |
+
+
+먼저 외부 API 없이 TODO의 구조와 noisy retrieval 한계를 확인한다.
+
+```bash
+.venv/bin/python -m pytest \
+  tests/evals/test_week4_session1_rag_end_to_end.py \
+  -k "not judge" -v
+```
+
+구조 검사를 통과한 뒤에만 smoke 5개와 의도적인 90일 오류를 judge로 실행한다.
+
+```bash
+DEEPEVAL_WEEK4_SESSION1_RUN_JUDGE=1 \
+  .venv/bin/deepeval test run \
+  tests/evals/test_week4_session1_rag_end_to_end.py -v
+
+# 직접 완성한 뒤 참고 답안의 API 없는 구조만 비교
+.venv/bin/python -m \
+  tests.evals.week4_session1_rag_end_to_end_solution --check
+```
+
+첫 명령에는 비용이 들지 않는다. judge 명령은 `OPENAI_API_KEY`와 비용이
+필요하며, threshold는 5주차 보정 전의 임시 값이다.
 
 ### 왜 black-box부터 시작하는가
 
@@ -85,11 +131,13 @@ tests/evals/test_week4_session1_rag_end_to_end.py
 기회를 놓치게 할 수 있지만, black-box 결과만으로 검색이 틀렸는지 생성이
 왜곡했는지는 알 수 없다.
 
-- [ ] 중요한 smoke Golden 5개를 선택한다.
-- [ ] 각 Golden으로 앱을 실행해 `LLMTestCase`를 만든다.
-- [ ] `AnswerRelevancyMetric`으로 질문에 직접 답하는지 본다.
+- [x] 중요한 smoke Golden 5개를 선택한다.
+- [x] 각 Golden으로 앱을 실행해 `LLMTestCase`를 만든다.
+- [x] `AnswerRelevancyMetric`으로 질문에 직접 답하는지 본다.
 - [ ] 2주차 custom 완전성 metric으로 다음 행동에 필요한 정보가 있는지 본다.
-- [ ] 실패 reason과 사용자 영향을 함께 기록한다.
+- [x] 실패 reason과 사용자 영향을 함께 기록한다.
+
+
 
 ### 의도적인 한계 사례
 
@@ -104,6 +152,8 @@ tests/evals/test_week4_session1_rag_end_to_end.py
 - [ ] black-box 평가가 답할 수 있는 질문과 없는 질문을 구분한다.
 - [ ] 최종 답변 실패 한 개를 재현하고 사용자 영향을 기록한다.
 
+
+
 ## 세션 2: retriever 평가
 
 > - 예상 시간: 60~90분
@@ -115,13 +165,17 @@ tests/evals/test_week4_session1_rag_end_to_end.py
 tests/evals/test_week4_session2_rag_retriever.py
 ```
 
+
+
 ### DeepEval 4.1.4 required field
 
-| metric | required field | 주로 보는 실패 |
-| --- | --- | --- |
-| `ContextualRelevancyMetric` | `input`, `retrieval_context` | 검색 결과 전체에 무관한 내용이 많음 |
-| `ContextualRecallMetric` | `input`, `retrieval_context`, `expected_output` | 답변에 필요한 근거 누락 |
-| `ContextualPrecisionMetric` | `input`, `retrieval_context`, `expected_output` | 관련 근거의 순위와 불필요한 결과 |
+
+| metric                      | required field                                  | 주로 보는 실패             |
+| --------------------------- | ----------------------------------------------- | -------------------- |
+| `ContextualRelevancyMetric` | `input`, `retrieval_context`                    | 검색 결과 전체에 무관한 내용이 많음 |
+| `ContextualRecallMetric`    | `input`, `retrieval_context`, `expected_output` | 답변에 필요한 근거 누락        |
+| `ContextualPrecisionMetric` | `input`, `retrieval_context`, `expected_output` | 관련 근거의 순위와 불필요한 결과   |
+
 
 설치 버전이 바뀌면 공식 문서와 metric 객체의 required parameter를 다시 확인한다.
 
@@ -130,12 +184,14 @@ tests/evals/test_week4_session2_rag_retriever.py
 환불 답변에 필요한 근거를 `30일 정책`, `주문 번호`, `고객센터 요청`이라고
 가정한다.
 
-| fixture | 예시 검색 결과 | 예상되는 핵심 신호 |
-| --- | --- | --- |
-| clean | `[30일, 주문 번호, 고객센터]` | 필요한 근거가 모두 있고 잡음이 적음 |
-| missing | `[30일, 고객센터]` | 관련 문서만 있어도 주문 번호 근거는 누락될 수 있음 |
-| noisy | `[배송, 30일, 회원등급, 주문 번호, 고객센터]` | 필요한 근거는 있지만 불필요한 결과가 많음 |
-| poorly-ranked | `[배송, 회원등급, 30일, 주문 번호, 고객센터]` | 근거의 존재와 앞쪽 순위는 다른 문제 |
+
+| fixture       | 예시 검색 결과                       | 예상되는 핵심 신호                    |
+| ------------- | ------------------------------ | ----------------------------- |
+| clean         | `[30일, 주문 번호, 고객센터]`           | 필요한 근거가 모두 있고 잡음이 적음          |
+| missing       | `[30일, 고객센터]`                  | 관련 문서만 있어도 주문 번호 근거는 누락될 수 있음 |
+| noisy         | `[배송, 30일, 회원등급, 주문 번호, 고객센터]` | 필요한 근거는 있지만 불필요한 결과가 많음       |
+| poorly-ranked | `[배송, 회원등급, 30일, 주문 번호, 고객센터]` | 근거의 존재와 앞쪽 순위는 다른 문제          |
+
 
 - **Recall**은 필요한 근거를 빠뜨리지 않았는지 묻는다.
 - **Relevancy**는 가져온 결과가 질문에 관련 있는지 묻는다.
@@ -162,10 +218,14 @@ tests/evals/test_week4_session2_rag_retriever.py
 - [ ] precision이 ranking 차이를 구분하는지 확인한다.
 - [ ] suite에 세 metric을 모두 넣지 않고 실제 위험을 보호하는 1~2개를 고른다.
 
+
+
 ### 완료 조건
 
 - [ ] recall, relevancy, precision을 사례로 구분한다.
 - [ ] 낮은 contextual score를 retriever/reranker 진단 가설로 연결한다.
+
+
 
 ## 세션 3: generator 평가
 
@@ -177,6 +237,8 @@ tests/evals/test_week4_session2_rag_retriever.py
 ```text
 tests/evals/test_week4_session3_rag_generator.py
 ```
+
+
 
 ### 왜 retrieval을 고정하는가
 
@@ -197,11 +259,13 @@ retriever 실패가 남는 상황을 관찰한다.
 
 ### metric의 책임
 
-| metric | 평가 질문 | 낮을 때 먼저 볼 대상 |
-| --- | --- | --- |
-| `AnswerRelevancyMetric` | 질문에 직접 답하는가? | generator prompt/output |
-| `FaithfulnessMetric` | 답변의 주장이 검색 근거로 뒷받침되는가? | generator grounding |
-| custom 완전성 `GEval` | 사용자가 다음 행동을 할 정보가 충분한가? | 답변 구성 로직 |
+
+| metric                  | 평가 질문                   | 낮을 때 먼저 볼 대상            |
+| ----------------------- | ----------------------- | ----------------------- |
+| `AnswerRelevancyMetric` | 질문에 직접 답하는가?            | generator prompt/output |
+| `FaithfulnessMetric`    | 답변의 주장이 검색 근거로 뒷받침되는가?  | generator grounding     |
+| custom 완전성 `GEval`      | 사용자가 다음 행동을 할 정보가 충분한가? | 답변 구성 로직                |
+
 
 세 metric은 같은 답변을 다른 질문으로 읽는다.
 
@@ -218,10 +282,14 @@ generator grounding을 강하게 의심하게 한다.
 - [ ] faithfulness는 높지만 제품 완전성이 낮은 사례를 확인한다.
 - [ ] 표준 metric과 custom metric이 서로 다른 수정 행동으로 이어지는지 기록한다.
 
+
+
 ### 완료 조건
 
 - [ ] 정상 retrieval을 고정한 실험에서 낮은 faithfulness를 generator grounding 가설로 연결한다.
 - [ ] 관련성, 근거 충실성, 제품 완전성을 서로 바꿔 사용하지 않는다.
+
+
 
 ## 세션 4: RAG 진단 suite 통합
 
@@ -230,22 +298,28 @@ generator grounding을 강하게 의심하게 한다.
 
 반드시 재현할 네 조합:
 
-| retrieval | generation | 예상 진단 |
-| --- | --- | --- |
-| 좋음 | 좋음 | 전체 통과 |
-| 좋음 | 근거 없는 주장 | generator/faithfulness 실패 |
-| 핵심 근거 누락 | 불완전하거나 잘못된 답변 | retriever와 end-to-end 모두 실패 가능 |
-| 올바른 근거 + 과도한 잡음 | 좋은 답변 | contextual metric 실패 가능 |
+
+| retrieval       | generation    | 예상 진단                          |
+| --------------- | ------------- | ------------------------------ |
+| 좋음              | 좋음            | 전체 통과                          |
+| 좋음              | 근거 없는 주장      | generator/faithfulness 실패      |
+| 핵심 근거 누락        | 불완전하거나 잘못된 답변 | retriever와 end-to-end 모두 실패 가능 |
+| 올바른 근거 + 과도한 잡음 | 좋은 답변         | contextual metric 실패 가능        |
+
 
 추가로 다음 교차 사례를 포함한다.
 
-| 교차 사례 | 관찰할 점 |
-| --- | --- |
-| 잘못된 정책 문서 검색 + 그 문서대로 답변 | Faithfulness가 높아도 실제 답변은 틀릴 수 있음 |
-| 좋은 검색 + 근거에는 충실하지만 절차 누락 | Faithfulness 통과, 완전성 실패 가능 |
-| 핵심 근거 누락 + 모델 사전지식으로 정답 | end-to-end 통과 가능, recall과 faithfulness는 실패 가능 |
+
+| 교차 사례                              | 관찰할 점                                                   |
+| ---------------------------------- | ------------------------------------------------------- |
+| 잘못된 정책 문서 검색 + 그 문서대로 답변           | Faithfulness가 높아도 실제 답변은 틀릴 수 있음                        |
+| 좋은 검색 + 근거에는 충실하지만 절차 누락           | Faithfulness 통과, 완전성 실패 가능                              |
+| 핵심 근거 누락 + 모델 사전지식으로 정답            | end-to-end 통과 가능, recall과 faithfulness는 실패 가능           |
 | 배송 안내가 섞인 noisy retrieval + 배송만 요약 | Faithfulness는 높아도 Answer Relevancy가 낮고 retriever 잡음도 의심 |
-| 오래되거나 잘못된 reference | 앱이 아니라 `data` 실패로 분류 |
+| 오래되거나 잘못된 reference                | 앱이 아니라 `data` 실패로 분류                                    |
+
+
+
 
 ### score를 원인이 아니라 증거로 읽는 순서
 
@@ -281,6 +355,8 @@ grounding을 먼저 조사한다. end-to-end fail, retriever pass, Faithfulness 
 - [ ] 잘못된 reference는 앱 품질 실패와 분리한다.
 - [ ] 실행 전 예상 metric, 실제 score/reason, 확인한 원문, 첫 조사 대상과 최종 분류를 기록한다.
 
+
+
 ## 4주차 완료 조건
 
 - [ ] end-to-end와 retriever/generator 평가 질문을 구분한다.
@@ -290,6 +366,8 @@ grounding을 먼저 조사한다. end-to-end fail, retriever pass, Faithfulness 
 - [ ] 각 metric의 비교 대상과 blind spot을 자신의 말로 설명할 수 있다.
 - [ ] 같은 사용자 실패를 retriever 원인과 generator 원인으로 각각 재현할 수 있다.
 - [ ] 근거가 부족하면 원인을 확정하지 않고 `unknown`으로 남길 수 있다.
+
+
 
 ## 막히기 쉬운 지점
 
