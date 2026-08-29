@@ -23,7 +23,8 @@
 | 3주차 세션 1~3 | 완료 | 3회 | [dataset과 regression](curriculum/week3_dataset_and_regression.md) | 최소 앱, Golden, 로컬 dataset |
 | 3주차 세션 4 | 진행 중 | 1회 | [dataset과 regression](curriculum/week3_dataset_and_regression.md) | pytest regression과 데이터 리뷰 |
 | 4주차 세션 1~2 | 완료 | 2회 | [RAG 평가](curriculum/week4_rag_evaluation.md) | end-to-end 증상과 retriever 진단 |
-| 4주차 세션 3~4 | 예정 | 2회 | [RAG 평가](curriculum/week4_rag_evaluation.md) | generator 진단과 RAG suite 통합 |
+| 4주차 세션 3 | 진행 중 | 1회 | [RAG 평가](curriculum/week4_rag_evaluation.md) | generator 관련성·충실성·완전성 격리 실험 |
+| 4주차 세션 4 | 예정 | 1회 | [RAG 평가](curriculum/week4_rag_evaluation.md) | RAG suite 통합 |
 | 5주차 | 예정 | 5회 | [보정과 신뢰도](curriculum/week5_calibration_and_reliability.md) | 사람 라벨 기반 threshold |
 | 6주차 | 예정 | 4회 | [CI와 캡스톤](curriculum/week6_ci_and_capstone.md) | 재현 가능한 eval pipeline |
 | 선택 심화 | 선택 | 2~3회/트랙 | [고급 트랙](curriculum/optional_advanced_tracks.md) | 관심 시스템 최소 예제 |

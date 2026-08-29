@@ -1,6 +1,6 @@
 # 4주차 — RAG end-to-end와 실패 원인 분리
 
-> - 상태: 예정
+> - 상태: 세션 1~2 완료, 세션 3 진행 중, 세션 4 예정
 > - 권장 분량: 4회
 > - 필수 트랙: RAG
 > - 핵심 질문: 낮은 score가 retriever와 generator 중 어디의 문제인지 어떻게 구분할 것인가?
@@ -266,11 +266,93 @@ judge 결과는 절대 점수보다 `clean > missing`, `clean > noisy`,
 > - 예상 시간: 60~90분
 > - 선행 조건: 세션 2 완료
 
+### generator란 무엇인가
+
+RAG는 보통 **retriever**와 **generator** 두 컴포넌트로 나누어 생각한다.
+
+```text
+사용자 질문
+   ↓
+retriever: 질문에 필요한 문서를 찾는다.
+   ↓
+retrieval_context: 실제로 검색된 문서 목록
+   ↓
+generator: 질문과 검색 문서를 읽고 사용자에게 보여 줄 답변을 만든다.
+   ↓
+actual_output: 최종 답변
+```
+
+환불 질문을 예로 들면 retriever는 “30일 이내”, “주문 번호와 구매일”,
+“고객센터로 요청”이라는 정책 문서를 찾는다. generator는 이 문서들을 그대로
+나열하는 대신 사용자의 질문에 맞는 자연스러운 답변으로 구성한다.
+
+```text
+질문: 지난주에 산 상품을 환불하려면 어떻게 해야 하나요?
+
+retriever가 찾은 문서:
+- 구매 후 30일 이내에는 전액 환불을 요청할 수 있습니다.
+- 환불 요청에는 주문 번호와 구매일이 필요합니다.
+- 환불은 고객센터를 통해 요청해야 합니다.
+
+generator가 만든 답변:
+지난주 구매 건은 30일 이내이므로 주문 번호와 구매일을 준비해
+고객센터로 전액 환불을 요청해 주세요.
+```
+
+retriever가 좋은 문서를 찾아도 generator는 실패할 수 있다. 질문과 무관한
+배송 정보를 답하거나, 30일을 90일로 바꾸거나, 주문 번호와 고객센터 절차를
+빠뜨릴 수 있기 때문이다. 반대로 generator가 검색 문서를 충실히 요약했어도
+retriever가 잘못된 정책을 가져왔다면 최종 답변은 실제 정책과 다를 수 있다.
+
+이번 세션에서 말하는 **generator 평가**는 “검색 결과가 옳은가?”가 아니라
+**“정상으로 확인된 검색 결과를 generator가 질문에 맞고, 근거에 충실하며,
+필요한 정보가 빠지지 않은 답변으로 만들었는가?”**를 평가하는 것이다.
+
+실제 서비스에서는 LLM이 generator 역할을 맡는 경우가 많다. 하지만 이번
+격리 실험에서는 LLM을 직접 호출하지 않고 미리 작성한 네 답변 문자열을
+``actual_output``으로 사용한다. 이렇게 하면 생성 모델의 무작위성과 호출 비용을
+제외하고, 각 metric이 어떤 generator 결함을 감지하는지 먼저 학습할 수 있다.
+
 권장 파일:
 
 ```text
 tests/evals/test_week4_session3_rag_generator.py
+tests/evals/week4_session3_rag_generator_solution.py
 ```
+
+학생용 파일은 정상으로 검토한 질문, 기대 답변과 검색 문서 세 개를 고정하고
+``actual_output``만 바꾸는 격리 실험이다. TODO 1~4를 순서대로 완성하면서
+관련성, 검색 근거 충실성, 제품 완전성이 서로 다른 질문임을 코드로 확인한다.
+
+| TODO | 구현 대상 | 왜 하는가 | 완료 후 관찰할 것 |
+| --- | --- | --- | --- |
+| 1 | 네 generator 출력 연결 | 결함이 통제된 답변을 준비한다. | fixture별 답변이 준비된다. |
+| 2 | `LLMTestCase` 생성 | reference와 runtime field를 구분한다. | 답변만 다른 사례가 만들어진다. |
+| 3 | generator metric factory | 세 품질 축을 metric에 연결한다. | 관련성·충실성·완전성 metric을 생성한다. |
+| 4 | 정상/결함 비교 쌍 | judge 실행 전 비교 가설을 정한다. | metric별 대표 비교가 준비된다. |
+
+먼저 외부 API 없이 구문 오류를 확인한다.
+
+```bash
+.venv/bin/python -m py_compile \
+  tests/evals/test_week4_session3_rag_generator.py
+```
+
+TODO를 완성한 뒤 정상 답변과 대표 결함 답변을 metric별로 비교한다.
+
+```bash
+DEEPEVAL_WEEK4_SESSION3_RUN_JUDGE=1 \
+  .venv/bin/deepeval test run \
+  tests/evals/test_week4_session3_rag_generator.py -v
+
+# 직접 완성하고 실행한 뒤 참고 답안을 비교
+.venv/bin/python -m \
+  tests.evals.week4_session3_rag_generator_solution --run
+```
+
+judge 명령은 세 metric을 두 fixture씩 총 6회 실행하므로 ``OPENAI_API_KEY``와
+비용이 필요하다. 0.7은 5주차 calibration 전의 임시 threshold다. 정확한 숫자에
+맞추기보다 ``good > defective`` 방향과 reason이 원문의 결함을 언급하는지 본다.
 
 
 
@@ -290,6 +372,19 @@ tests/evals/test_week4_session3_rag_generator.py
 `검색 누락 + 우연히 그럴듯한 답변`은 retrieval까지 바뀌므로 같은 실험에
 섞지 않는다. 세션 4의 교차 컴포넌트 사례로 옮겨 end-to-end는 통과해도
 retriever 실패가 남는 상황을 관찰한다.
+
+실습의 네 fixture는 다음처럼 읽는다.
+
+| fixture | 답변의 핵심 | 먼저 관찰할 신호 | 첫 조사 대상 |
+| --- | --- | --- | --- |
+| `good` | 30일, 주문 정보, 고객센터를 모두 안내 | 모두 건강한 기준선 | 없음 |
+| `off_topic` | 환불 대신 배송 기간을 설명 | Answer Relevancy | prompt와 output의 주제 선택 |
+| `hallucinated_window` | 30일 근거를 90일로 왜곡 | Faithfulness | grounding |
+| `incomplete` | 30일은 맞지만 주문 정보와 고객센터 누락 | custom 완전성 | 답변 구성 로직 |
+
+한 결함이 다른 metric에도 영향을 줄 수 있다. 예를 들어 배송 답변은 질문과
+관련이 없을 뿐 아니라 clean 환불 근거에도 없는 내용이다. primary signal은
+“이 metric만 실패해야 한다”는 뜻이 아니라, fixture를 만든 첫 학습 목적이다.
 
 ### metric의 책임
 
@@ -311,6 +406,31 @@ Faithfulness는 사실 정확도 metric이 아니다. 잘못 검색된 “90일 
 generator가 그대로 사용하면 Faithfulness는 높을 수 있다. 반대로 격리 실험에서
 `retrieval_context`가 정상임을 확인하고 고정했을 때 낮은 Faithfulness가
 generator grounding을 강하게 의심하게 한다.
+
+### required field로 metric의 시야 확인하기
+
+| metric | 비교하는 field | 의도적으로 보지 않는 것 |
+| --- | --- | --- |
+| `AnswerRelevancyMetric` | `input`, `actual_output` | 검색 근거와 기대 답변 |
+| `FaithfulnessMetric` | `input`, `actual_output`, `retrieval_context` | reviewed `expected_output` |
+| custom 완전성 `GEval` | `actual_output`, `expected_output` | retrieval의 검색 품질 |
+
+따라서 높은 Faithfulness만으로 정책이 실제로 옳다고 말할 수 없다. 이 metric은
+runtime 검색 문서와 답변의 정합성을 본다. 검색 문서가 정상이라는 사실은 세션 2의
+retriever 평가나 reviewer 검토로 별도로 확보해야 한다.
+
+### 결과를 기록하는 법
+
+각 비교에서 다음 네 가지를 한 묶음으로 기록한다.
+
+1. 실행 전에 예측한 primary signal
+2. 정상/결함 fixture의 score와 reason
+3. 답변과 retrieval 원문에서 직접 확인한 결함
+4. 첫 조사 대상과 metric만으로 확정할 수 없는 것
+
+예: “clean retrieval을 고정한 상태에서 90일 답변의 Faithfulness가 내려갔고
+reason도 30일 근거와의 충돌을 언급했다. generator grounding을 먼저 조사한다.
+다만 이 결과 하나만으로 production retriever 전체가 정상이라고 확정하지 않는다.”
 
 - [ ] 관련성은 높지만 faithfulness가 낮은 사례를 확인한다.
 - [ ] faithfulness는 높지만 제품 완전성이 낮은 사례를 확인한다.
